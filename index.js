@@ -41,7 +41,7 @@ module.exports = class customRPC extends Plugin {
         id: 169,
         application: {
           id: clientID,
-          name: "Music",
+          name: this.settings.get("appName") || "Music",
         },
         transport: "ipc",
       },
@@ -62,25 +62,30 @@ module.exports = class customRPC extends Plugin {
     const track = playing.recent;
     if (!track.nowplaying) return undefined;
 
+    const buttons = [];
+    if (this.settings.get("shareName"))
+      buttons.push({
+        label: "Last.fm Profile",
+        url: `https://www.last.fm/user/${username}`,
+      });
+    buttons.push({
+      label: "View Song",
+      url: track.url,
+    });
+
+    let small_text = "Scrobbling on last.fm";
+    if (this.settings.get("shareName")) small_text += ` as ${username}`;
+
     return {
       details: track.track,
       state: track.artist,
       assets: {
-        large_image: track.image[track.image.length - 1]?.url || "lastfm",
+        large_image: track.image[track.image.length - 1].url,
         small_image: "lastfm",
         large_text: track.album,
-        small_text: `Scrobbling on last.fm as ${username}`,
+        small_text,
       },
-      buttons: [
-        {
-          label: "Last.fm Profile",
-          url: `https://www.last.fm/user/${username}`,
-        },
-        {
-          label: "View Song",
-          url: track.url,
-        },
-      ],
+      buttons,
     };
   }
 
@@ -90,8 +95,11 @@ module.exports = class customRPC extends Plugin {
       case 0:
         this.settings.set("enabled", false);
         this.settings.set("username", this.settings.get("username", ""));
+      case 1:
+        this.settings.set("shareName", true);
+        this.settings.set("appName", "");
     }
-    this.settings.set("_version", 1);
+    this.settings.set("_version", 2);
 
     powercord.api.settings.registerSettings(this.entityID, {
       category: this.entityID,
