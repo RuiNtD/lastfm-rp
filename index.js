@@ -34,11 +34,11 @@ module.exports = class customRPC extends Plugin {
     userAgent: "github.com/FayneAldan/lastfm-rp",
   });
 
-  async reloadRPC() {
+  setActivity(activity) {
     SET_ACTIVITY.handler({
       isSocketConnected: () => true,
       socket: {
-        id: 100,
+        id: 169,
         application: {
           id: clientID,
           name: "Music",
@@ -47,13 +47,15 @@ module.exports = class customRPC extends Plugin {
       },
       args: {
         pid: 10,
-        activity: await this.activity(),
+        activity: activity,
       },
     });
   }
 
   async activity() {
-    const username = this.settings.get("username", "");
+    if (!this.settings.get("enabled")) return undefined;
+
+    const username = this.settings.get("username");
     if (!username) return undefined;
 
     const playing = await this.lastfm.helper.getNowPlaying(username);
@@ -83,31 +85,28 @@ module.exports = class customRPC extends Plugin {
   }
 
   startPlugin() {
+    // Setting Migration
+    switch (this.settings.get("_version", 0)) {
+      case 0:
+        this.settings.set("enabled", false);
+        this.settings.set("username", this.settings.get("username", ""));
+    }
+    this.settings.set("_version", 1);
+
     powercord.api.settings.registerSettings(this.entityID, {
       category: this.entityID,
       label: "Last.fm Rich Presence",
       render: (props) => React.createElement(Settings, props),
     });
 
-    this.timerID = setInterval(() => this.reloadRPC(), 5000);
+    this.timerID = setInterval(
+      async () => this.setActivity(await this.activity()),
+      5000
+    );
   }
 
   pluginWillUnload() {
-    SET_ACTIVITY.handler({
-      isSocketConnected: () => true,
-      socket: {
-        id: 100,
-        application: {
-          id: clientID,
-          name: "Music",
-        },
-        transport: "ipc",
-      },
-      args: {
-        pid: 10,
-        activity: undefined,
-      },
-    });
+    this.setActivity(undefined);
     if (this.timerID) clearInterval(this.timerID);
     powercord.api.settings.unregisterSettings(this.entityID);
   }
