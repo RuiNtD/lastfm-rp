@@ -54,10 +54,7 @@ module.exports = class customRPC extends Plugin {
 
   async activity() {
     const username = this.settings.get("username", "");
-    if (!username) {
-      console.log("No username");
-      return undefined;
-    }
+    if (!username) return undefined;
 
     const playing = await this.lastfm.helper.getNowPlaying(username);
     const track = playing.recent;
