@@ -4,7 +4,7 @@ Powercord and Cumcord plugin that adds Last.fm Rich Presence to Discord
 
 ## Installation
 - Install with [Cumcord]:
-  - [Click to install][https://send.cumcord.com/#https://faynealdan.github.io/lastfm-rp/dist/]
+  - [Click to install](https://send.cumcord.com/#https://faynealdan.github.io/lastfm-rp/dist/)
   - URL: <https://faynealdan.github.io/lastfm-rp/dist/>
 - Install with [Replugged]:
   ```cmd
