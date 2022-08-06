@@ -1,27 +1,6 @@
 const { Plugin } = require("powercord/entities");
 const { getModule, React } = require("powercord/webpack");
 
-const { join } = require("path");
-const { existsSync } = require("fs");
-const { execSync } = require("child_process");
-const nodeModulesPath = join(__dirname, "node_modules");
-
-function installDeps() {
-  console.log("Installing dependencies, please wait...");
-  execSync("npm install --only=prod", {
-    cwd: __dirname,
-    stdio: [null, null, null],
-  });
-  console.log("Dependencies successfully installed!");
-  powercord.pluginManager.remount(__dirname);
-}
-
-if (!existsSync(nodeModulesPath)) {
-  installDeps();
-  return;
-}
-
-const LastFMTyped = require("lastfm-typed").default;
 const Settings = require("./Settings");
 
 const { SET_ACTIVITY } = getModule(["SET_ACTIVITY"], false);
@@ -30,9 +9,6 @@ const lastFmKey = "52ffa34ebbd200da17da5a6c3aef1b2e";
 
 module.exports = class customRPC extends Plugin {
   timerID;
-  lastfm = new LastFMTyped(lastFmKey, {
-    userAgent: "github.com/FayneAldan/lastfm-rp",
-  });
 
   setActivity(activity) {
     SET_ACTIVITY.handler({
@@ -55,12 +31,19 @@ module.exports = class customRPC extends Plugin {
   async activity() {
     if (!this.settings.get("enabled")) return undefined;
 
-    const username = this.settings.get("username");
+    const username = encodeURIComponent(this.settings.get("username"));
     if (!username) return undefined;
 
-    const playing = await this.lastfm.helper.getNowPlaying(username);
-    const track = playing.recent;
-    if (!track.nowplaying) return undefined;
+    const recent = await (
+      await fetch(
+        `https://ws.audioscrobbler.com/2.0/?method=user.getrecenttracks&user=${username}&api_key=${lastFmKey}&format=json`
+      )
+    ).json();
+
+    if (recent.error) return undefined;
+
+    const track = recent.recenttracks.track[0];
+    if (!track || !track["@attr"]?.nowplaying) return undefined;
 
     const buttons = [];
     if (this.settings.get("shareName"))
@@ -77,12 +60,12 @@ module.exports = class customRPC extends Plugin {
     if (this.settings.get("shareName")) small_text += ` as ${username}`;
 
     return {
-      details: track.track,
-      state: `by ${track.artist}`,
+      details: track.name,
+      state: `by ${track.artist["#text"]}`,
       assets: {
-        large_image: track.image[track.image.length - 1].url,
+        large_image: track.image[track.image.length - 1]["#text"],
         small_image: "lastfm",
-        large_text: track.album,
+        large_text: track.album["#text"],
         small_text,
       },
       buttons,
@@ -114,8 +97,8 @@ module.exports = class customRPC extends Plugin {
   }
 
   pluginWillUnload() {
-    this.setActivity(undefined);
-    if (this.timerID) clearInterval(this.timerID);
     powercord.api.settings.unregisterSettings(this.entityID);
+    if (this.timerID) clearInterval(this.timerID);
+    this.setActivity(undefined);
   }
 };
