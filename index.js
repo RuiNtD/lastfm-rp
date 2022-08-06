@@ -78,7 +78,7 @@ module.exports = class customRPC extends Plugin {
 
     return {
       details: track.track,
-      state: track.artist,
+      state: `by ${track.artist}`,
       assets: {
         large_image: track.image[track.image.length - 1].url,
         small_image: "lastfm",
