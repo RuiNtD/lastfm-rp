@@ -4,5 +4,5 @@
   "description": "Shows your Last.fm listening status on your profile",
   "author": "Fayne Aldan",
   "license": "MIT",
-  "permissions": ["exp_api"]
+  "permissions": ["ext_api"]
 }
