@@ -19,6 +19,7 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v3
+      - run: mkdir _site
 
       - uses: actions/configure-pages@v1
       - uses: actions/jekyll-build-pages@v1
@@ -35,6 +36,9 @@ jobs:
       - uses: actions/upload-pages-artifact@v1
 
   deploy:
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
     runs-on: ubuntu-latest
     needs: build
     steps:
