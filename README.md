@@ -1,7 +1,7 @@
-# Installation
+## Installation
 - Install with [Cumcord]:
-  - [Click to install](https://send.cumcord.com/#https://faynealdan.github.io/lastfm-rp/dist/)
-  - URL: <https://faynealdan.github.io/lastfm-rp/dist/>
+  - [Click to install](https://send.cumcord.com/#https://faynealdan.github.io/lastfm-rp/)
+  - URL: <https://faynealdan.github.io/lastfm-rp/>
 - Install with [Replugged]:
   ```cmd
   cd replugged/src/Powercord/plugins
