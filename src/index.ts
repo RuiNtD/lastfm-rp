@@ -22,7 +22,9 @@ const patches = [
   () => setActivity(undefined),
 ];
 
-function setActivity(activity): void {
+let shuttingDown = false;
+
+function setActivity(activity?): void {
   SET_ACTIVITY.handler({
     isSocketConnected: () => true,
     socket: {
@@ -35,37 +37,45 @@ function setActivity(activity): void {
     },
     args: {
       pid: 10,
-      activity: activity,
+      activity: shuttingDown ? undefined : activity,
     },
   });
 }
 
 async function activity() {
+  store.status =
+    "🕑 Checking last.fm...\nIf this doesn't disappear, something might be wrong.";
+
   if (!store.enabled) {
     store.status = "❌ Plugin disabled";
     return undefined;
   }
 
-  const username = encodeURIComponent(store.username);
+  const username = store.username;
   if (!username) {
     store.status = "❌ Last.fm username required";
     return undefined;
   }
 
   // const playing = await lastfm.helper.getNowPlaying(username);
-  const recent = await (
-    await fetch(
-      `https://ws.audioscrobbler.com/2.0/?method=user.getrecenttracks&user=${username}&api_key=${lastFmKey}&format=json`
-    )
-  ).json();
+  const url = new URL("https://ws.audioscrobbler.com/2.0/");
+  url.search = new URLSearchParams({
+    method: "user.getrecenttracks",
+    api_key: lastFmKey,
+    format: "json",
+    user: username,
+    limit: "1",
+  }).toString();
+  const recent = await (await fetch(url)).json();
 
   if (recent.error) {
     store.status = `❌ Error from Last.fm: ${recent.message}`;
+    return undefined;
   }
 
   const track = recent.recenttracks.track[0];
   if (!track || !track["@attr"]?.nowplaying) {
-    store.status = "⏹️ Nothing playing";
+    store.status = `⏹️ Nothing playing\nLast song: ${track.name}`;
     return undefined;
   }
 
@@ -100,9 +110,9 @@ async function activity() {
 
 export async function onLoad() {
   store.status = "🕑 Waiting for status...";
-  console.log(SET_ACTIVITY);
 }
 export function onUnload() {
+  shuttingDown = true;
   _.forEachRight(patches, (p) => p());
 }
 

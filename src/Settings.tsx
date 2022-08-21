@@ -6,11 +6,10 @@ import { persist } from "@cumcord/pluginData";
 export default dependPersist(() => (
   <div className="lastfm-settings-container">
     <Card type={Card.Types.PRIMARY} className="lastfm-status-card">
-      <FormTitle tag={FormTitle.Tags.H1}>Status</FormTitle>
+      <FormTitle tag={FormTitle.Tags.H1}>Current Status</FormTitle>
       <FormText className="lastfm-status" type={FormText.Types.DESCRIPTION}>
-        {persist.ghost.status}
-        <br />
-        <small>(Updates every 5 seconds)</small>
+        <div className="updatesEvery">(Updates every 5 seconds)</div>
+        <div className="status">{persist.ghost.status}</div>
       </FormText>
     </Card>
     <SSwitch k="enabled" depends={undefined}>

@@ -4,11 +4,15 @@
     padding: 20px;
     margin-bottom: 1rem;
 
-    small {
-      font-size: smaller;
-    }
     h1 {
-      margin-bottom: 0.25rem;
+      margin-bottom: 0rem;
+    }
+    .updatesEvery {
+      font-size: smaller;
+      margin-bottom: 0.5rem;
+    }
+    .status {
+      white-space: pre-wrap;
     }
   }
 }
