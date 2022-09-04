@@ -6,6 +6,7 @@ import _ from "lodash";
 import { findByProps } from "@cumcord/modules/webpack";
 
 const { SET_ACTIVITY } = findByProps("SET_ACTIVITY");
+const { getActivities } = findByProps("getActivities");
 import injectStyles from "./styles.scss";
 
 const clientID = "740140397162135563";
@@ -23,6 +24,48 @@ const patches = [
 ];
 
 let shuttingDown = false;
+
+const OtherAppIDs: { [appName: string]: string[] } = {
+  Cider: [
+    "911790844204437504", // Cider
+    "886578863147192350", // Apple Music
+  ],
+  iTRP: [
+    // iTunes Rich Presence
+    // https://itunesrichpresence.com/
+    "383816327850360843", // iTunes
+    "529435150472183819", // Apple Music
+  ],
+  AMPMD: ["842112189618978897"], // Apple Music PreMiD
+};
+
+function getActAppIDs() {
+  const activities = getActivities();
+  const appIDs: string[] = [];
+  for (const { application_id: appID } of activities) {
+    if (!appID) continue;
+    if (appID == clientID) continue;
+    appIDs.push(appID);
+  }
+  return appIDs;
+}
+
+function hasOtherActivity(): boolean {
+  if (!store.otherEnabled) return false;
+  if (store.otherListening) {
+    const activities = getActivities();
+    for (const { type, application_id: appID } of activities) {
+      if (type == 2 && appID != clientID) return true;
+    }
+  }
+  const actAppIDs = getActAppIDs();
+  for (const appName in OtherAppIDs) {
+    if (!store["other" + appName]) continue;
+    const appIDs = OtherAppIDs[appName];
+    for (const appID of appIDs) if (_.includes(actAppIDs, appID)) return true;
+  }
+  return false;
+}
 
 function setActivity(activity?): void {
   SET_ACTIVITY.handler({
@@ -49,6 +92,11 @@ async function activity() {
   const username = store.username;
   if (!username) {
     store.status = "❌ Please add your Last.fm username";
+    return undefined;
+  }
+
+  if (hasOtherActivity()) {
+    store.status = "❌ Another player's rich presence detected";
     return undefined;
   }
 
@@ -115,6 +163,11 @@ setDefaults({
   username: "",
   shareName: true,
   appName: "Music",
+  otherEnabled: true,
+  otherListening: true,
+  otherCider: true,
+  otheriTRP: true,
+  otherAMPMD: true,
 });
 
 export { default as settings } from "./Settings";
