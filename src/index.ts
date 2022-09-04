@@ -96,7 +96,7 @@ async function activity() {
   }
 
   if (hasOtherActivity()) {
-    store.status = "❌ Another player's rich presence detected";
+    store.status = "🔇 Detected another player's Rich Presence";
     return undefined;
   }
 
