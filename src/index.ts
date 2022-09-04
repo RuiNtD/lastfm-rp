@@ -36,7 +36,7 @@ function setActivity(activity?): void {
       transport: "ipc",
     },
     args: {
-      pid: 10,
+      pid: 169,
       activity: shuttingDown ? undefined : activity,
     },
   });
