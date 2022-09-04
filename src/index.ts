@@ -46,11 +46,6 @@ async function activity() {
   store.status =
     "🕑 Checking last.fm...\nIf this doesn't disappear, something might be wrong.";
 
-  if (!store.enabled) {
-    store.status = "❌ Plugin disabled";
-    return undefined;
-  }
-
   const username = store.username;
   if (!username) {
     store.status = "❌ Please add your Last.fm username";
@@ -117,7 +112,6 @@ export function onUnload() {
 }
 
 setDefaults({
-  enabled: false,
   username: "",
   shareName: true,
   appName: "Music",

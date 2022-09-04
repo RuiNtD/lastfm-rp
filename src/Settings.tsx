@@ -12,17 +12,8 @@ export default dependPersist(() => (
         <div className="status">{persist.ghost.status}</div>
       </FormText>
     </Card>
-    <SSwitch k="enabled" depends={undefined}>
-      Enable Last.fm Rich Presence
-    </SSwitch>
-    <SText k="username" depends="enabled">
-      Last.fm Username
-    </SText>
-    <SText k="appName" depends="enabled">
-      Application Name
-    </SText>
-    <SSwitch k="shareName" depends="enabled">
-      Share Username
-    </SSwitch>
+    <SText k="username">Last.fm Username</SText>
+    <SText k="appName">Application Name</SText>
+    <SSwitch k="shareName">Share Username</SSwitch>
   </div>
 ));
