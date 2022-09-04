@@ -53,7 +53,7 @@ async function activity() {
 
   const username = store.username;
   if (!username) {
-    store.status = "❌ Last.fm username required";
+    store.status = "❌ Please add your Last.fm username";
     return undefined;
   }
 
