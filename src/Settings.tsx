@@ -12,8 +12,16 @@ export default dependPersist(() => (
         <div className="status">{persist.ghost.status}</div>
       </FormText>
     </Card>
-    <SText k="username">Last.fm Username</SText>
-    <SText k="appName">Application Name</SText>
+    <SText k="username">
+      Last.fm Username
+      <br />
+      <small>Required</small>
+    </SText>
+    <SText k="appName">
+      Application Name
+      <br />
+      <small>Default: Music</small>
+    </SText>
     <SSwitch k="shareName">Share Username</SSwitch>
     <SSwitch k="otherEnabled">
       Disable when another player's Rich Presence is detected
@@ -40,5 +48,10 @@ export default dependPersist(() => (
         Apple Music PreMiD
       </a>
     </SSwitch>
+    <SText k="lastFmKey">
+      Custom Last.fm API Key
+      <br />
+      <small>Optional</small>
+    </SText>
   </div>
 ));

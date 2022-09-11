@@ -1,4 +1,9 @@
 .lastfm-settings-container {
+  .updatesEvery,
+  small {
+    font-size: smaller;
+    margin-bottom: 0.5rem;
+  }
   .lastfm-status-card {
     width: 100%;
     padding: 20px;
@@ -7,12 +12,9 @@
     h1 {
       margin-bottom: 0rem;
     }
-    .updatesEvery {
-      font-size: smaller;
-      margin-bottom: 0.5rem;
-    }
     .status {
       white-space: pre-wrap;
+      min-height: 3em;
     }
   }
 }
