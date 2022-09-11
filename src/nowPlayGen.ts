@@ -54,7 +54,12 @@ export async function genPlayImage(): Promise<Blob> {
   await new Promise((resolve) => {
     albumArt.onload = resolve;
   });
+
+  ctx.save();
+  roundImage(ctx, 5, 5, 90, 90, 10);
+  ctx.clip();
   ctx.drawImage(albumArt, 5, 5, 90, 90);
+  ctx.restore();
 
   // TODO: Add Loved indicator
 
@@ -97,6 +102,23 @@ export async function genPlayImage(): Promise<Blob> {
       blob ? resolve(blob) : reject();
     });
   });
+}
+
+function roundImage(
+  ctx: CanvasRenderingContext2D,
+  x: number,
+  y: number,
+  width: number,
+  height: number,
+  radius: number
+) {
+  ctx.beginPath();
+  ctx.moveTo(x, y + radius);
+  ctx.arcTo(x, y + height, x + radius, y + height, radius);
+  ctx.arcTo(x + width, y + height, x + width, y + height - radius, radius);
+  ctx.arcTo(x + width, y, x + width - radius, y, radius);
+  ctx.arcTo(x, y, x, y + radius, radius);
+  ctx.closePath();
 }
 
 function centerText(
