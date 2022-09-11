@@ -1,24 +1,66 @@
 /// <reference path="../node_modules/cumcord-types/defs.d.ts" />
 
-import { persist } from "@cumcord/pluginData";
+import cumcord from "@cumcord";
 import { setDefaults } from "cumcord-tools";
 import _ from "lodash";
-import { findByProps } from "@cumcord/modules/webpack";
+import { getLastTrack } from "./lastFm";
+import { genPlayImage, genPlayText } from "./nowPlayGen";
 
+const { findByProps } = cumcord.modules.webpack;
 const { SET_ACTIVITY } = findByProps("SET_ACTIVITY");
 const { getActivities } = findByProps("getActivities");
+const { promptToUpload } = findByProps("promptToUpload");
 import injectStyles from "./styles.scss";
 
 const clientID = "740140397162135563";
-const lastFmKey = "52ffa34ebbd200da17da5a6c3aef1b2e";
 
-const { store } = persist;
+const { store } = cumcord.pluginData.persist;
 
 const timer = setInterval(async () => {
   setActivity(await activity());
 }, 5000);
+
+const removeCommand = cumcord.commands.addCommand({
+  name: "lastfm",
+  description: "Send your Last.fm status",
+  args: [
+    {
+      name: "textOnly",
+      description: "Sends text instead of an image.",
+      type: "bool",
+      required: false,
+    },
+  ],
+  handler: async (ctx, send) => {
+    const { textOnly } = ctx.args;
+
+    const username = store.username;
+    if (!username) {
+      send(
+        "❌ Please add your Last.fm username in the Last.fm Rich Presence settings"
+      );
+      return;
+    }
+
+    try {
+      if (textOnly) return await genPlayText();
+      else {
+        const image = await genPlayImage();
+        const arrayBuffer = await image.arrayBuffer();
+        const file = new File([Buffer.from(arrayBuffer)], "lastfm.png", {
+          type: "image/png",
+        });
+        promptToUpload([file], ctx.channel, 0);
+      }
+    } catch (e) {
+      send("❌ Error: " + e);
+    }
+  },
+});
+
 const patches = [
   injectStyles(),
+  removeCommand,
   () => clearInterval(timer),
   () => setActivity(undefined),
 ];
@@ -91,38 +133,30 @@ async function activity() {
 
   const username = store.username;
   if (!username) {
-    store.status = "❌ Please add your Last.fm username";
-    return undefined;
+    store.status =
+      "Please add your Last.fm username below to\nstart showing your status on your profile";
+    return;
   }
 
   if (hasOtherActivity()) {
     store.status = "🔇 Detected another player's Rich Presence";
-    return undefined;
+    return;
   }
 
-  // const playing = await lastfm.helper.getNowPlaying(username);
-  const url = new URL("https://ws.audioscrobbler.com/2.0/");
-  url.search = new URLSearchParams({
-    method: "user.getrecenttracks",
-    api_key: lastFmKey,
-    format: "json",
-    user: username,
-    limit: "1",
-  }).toString();
-  const recent = await (await fetch(url)).json();
+  const recent = await getLastTrack();
 
   if (recent.error) {
-    store.status = `❌ Error from Last.fm: ${recent.message}`;
-    return undefined;
+    store.status = `❌ Error from Last.fm\n${recent.message}`;
+    return;
   }
 
   const track = recent.recenttracks.track[0];
   if (!track || !track["@attr"]?.nowplaying) {
     store.status = `⏹️ Nothing playing\nLast song: ${track.name}`;
-    return undefined;
+    return;
   }
 
-  store.status = `▶️ Now playing: ${track.name}`;
+  store.status = `▶️ Now playing\n${track.name}`;
 
   const buttons: any[] = [];
   if (store.shareName)
@@ -135,8 +169,9 @@ async function activity() {
     url: track.url,
   });
 
-  let small_text = "Scrobbling on last.fm";
-  if (store.shareName) small_text += ` as ${username}`;
+  let small_text = "Scrobbling now ";
+  if (store.shareName) small_text += `as ${username} `;
+  small_text += "on Last.fm";
 
   return {
     details: track.name,
@@ -152,7 +187,7 @@ async function activity() {
 }
 
 export async function onLoad() {
-  store.status = "🕑 Waiting for status...";
+  store.status = "🕑 Waiting for first load...";
 }
 export function onUnload() {
   shuttingDown = true;
@@ -168,6 +203,7 @@ setDefaults({
   otherCider: true,
   otheriTRP: true,
   otherAMPMD: true,
+  lastFmKey: "",
 });
 
 export { default as settings } from "./Settings";
