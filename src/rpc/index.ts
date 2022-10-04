@@ -34,8 +34,6 @@ client.on("disconnected", () => {
 
 client.login();
 
-let lastStatus = "";
-
 /*const removeCommand = cumcord.commands.addCommand({
   name: "lastfm",
   description: "Send your Last.fm status",
@@ -74,10 +72,18 @@ let lastStatus = "";
   },
 });*/
 
-function status(newStatus: string) {
-  if (lastStatus != newStatus) {
-    lastStatus = newStatus;
-    console.log(newStatus);
+let lastStatus = {
+  status: "",
+  date: new Date(),
+};
+
+function status(status: string) {
+  if (lastStatus.status != status) {
+    lastStatus = {
+      status,
+      date: new Date(),
+    };
+    console.log(status);
   }
 }
 
@@ -193,6 +199,8 @@ async function activity(): Promise<SetActivity | undefined> {
     smallImageKey: small_image,
     largeImageText: track.album.name,
     smallImageText: small_text,
+
+    startTimestamp: lastStatus.date,
 
     buttons,
   };
