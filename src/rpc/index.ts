@@ -173,7 +173,7 @@ async function activity(): Promise<SetActivity | undefined> {
 
   const buttons: any[] = [];
   let small_image = "lastfm";
-  let small_text = "Scrobbling now as ";
+  let small_text = "Scrobbling now ";
 
   if (config.shareName) {
     const user = await getCachedUser();
@@ -181,7 +181,7 @@ async function activity(): Promise<SetActivity | undefined> {
       label: "Last.fm Profile",
       url: user.url,
     });
-    small_text += `${user.name} `;
+    small_text += `as ${user.name} `;
     small_image = user.image[user.image.length - 1].url;
   }
 
