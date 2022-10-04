@@ -152,17 +152,18 @@ async function activity(): Promise<SetActivity | undefined> {
   try {
     recent = await getLastTrack();
   } catch (e) {
-    status(`❌ Error from Last.fm\n  ${e}`);
+    console.error("Error from Last.fm");
+    console.log("\t", e);
     return;
   }
 
   const track = recent.tracks[0];
   if (!track || !track.nowplaying) {
-    status(`⏹️ Nothing playing\n  Last song: ${track.name}`);
+    status("Nothing playing");
     return;
   }
 
-  status(`▶️ Now playing\n  ${track.name}`);
+  status(`Now playing: ${track.name}`);
 
   const buttons: any[] = [];
   let small_image = "lastfm";
