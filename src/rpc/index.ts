@@ -17,11 +17,19 @@ if (!username) {
 }
 
 client.on("ready", async () => {
-  console.log("Connected!", client.user?.tag);
+  console.log("Ready!", client.user?.tag);
   setInterval(async () => {
     setActivity(await activity());
   }, 5000);
   setActivity(await activity());
+});
+
+client.on("connected", () => {
+  console.log("Connected to Discord");
+});
+
+client.on("disconnected", () => {
+  console.log("Disconnected from Discord");
 });
 
 client.login();
