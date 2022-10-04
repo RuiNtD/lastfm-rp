@@ -1,12 +1,8 @@
-/// <reference path="./imageImport.d.ts" />
 import { getLastTrack } from "./lastFm";
-import { persist } from "@cumcord/pluginData";
-const { store } = persist;
-import bgSrc from "../assets/np-background.png";
 import moment from "moment";
 
 const bgImg = new Image();
-bgImg.src = bgSrc;
+bgImg.src = "../assets/np-background.png";
 
 const debug = false;
 const font = "sans-serif";

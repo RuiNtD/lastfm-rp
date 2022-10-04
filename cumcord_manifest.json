@@ -1,7 +1,0 @@
-{
-  "name": "Last.fm Rich Presence",
-  "description": "Shows your Last.fm listening status on your profile",
-  "author": "Fayne Aldan",
-  "file": "src/index.ts",
-  "license": "MIT"
-}
