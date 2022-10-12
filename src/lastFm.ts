@@ -14,12 +14,9 @@ export async function getLastTrack() {
   });
 }
 
-export async function getUser() {
-  return await lastfm.user.getInfo(username);
-}
-
 let cachedUser: getInfo;
-export async function getCachedUser() {
-  cachedUser = cachedUser || (await getUser());
+export async function getUser() {
+  if (cachedUser) return cachedUser;
+  cachedUser = await lastfm.user.getInfo(username);
   return cachedUser;
 }

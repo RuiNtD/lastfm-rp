@@ -1,4 +1,4 @@
-import { getCachedUser, getLastTrack } from "./lastFm";
+import { getUser, getLastTrack } from "./lastFm";
 import { Client, SetActivity } from "@xhayper/discord-rpc";
 import { GatewayActivity } from "discord-api-types/v10";
 import { exit } from "process";
@@ -176,7 +176,7 @@ async function activity(): Promise<SetActivity | undefined> {
   let small_text = "Scrobbling now ";
 
   if (config.shareName) {
-    const user = await getCachedUser();
+    const user = await getUser();
     buttons.push({
       label: "Last.fm Profile",
       url: user.url,
