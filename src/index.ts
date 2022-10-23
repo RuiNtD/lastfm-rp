@@ -1,4 +1,4 @@
-import { getUser, getLastTrack } from "./lastFm";
+import * as lastfm from "./lastFm";
 import { Client, SetActivity } from "@xhayper/discord-rpc";
 import { GatewayActivity } from "discord-api-types/v10";
 import { exit } from "process";
@@ -156,7 +156,7 @@ async function activity(): Promise<SetActivity | undefined> {
 
   let recent: getRecentTracks;
   try {
-    recent = await getLastTrack();
+    recent = await lastfm.getLastTrack();
   } catch (e) {
     console.error("Error from Last.fm");
     console.log("\t", e);
@@ -176,7 +176,7 @@ async function activity(): Promise<SetActivity | undefined> {
   let small_text = "Scrobbling now ";
 
   if (config.shareName) {
-    const user = await getUser();
+    const user = await lastfm.getUser();
     buttons.push({
       label: "Last.fm Profile",
       url: user.url,
