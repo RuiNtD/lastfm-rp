@@ -4,6 +4,7 @@ specifiers:
   '@tsconfig/node16': ^1.0.3
   '@types/node': ^18.8.1
   '@xhayper/discord-rpc': ^1.0.8
+  chalk: ^5.1.2
   chokidar: ^3.5.3
   discord-api-types: ^0.37.11
   lastfm-typed: ^2.0.2
@@ -15,6 +16,7 @@ specifiers:
 
 dependencies:
   '@xhayper/discord-rpc': 1.0.8
+  chalk: 5.1.2
   chokidar: 3.5.3
   lastfm-typed: 2.0.2
   lodash: 4.17.21
@@ -125,6 +127,11 @@ packages:
     engines: {node: '>=10.16.0'}
     dependencies:
       streamsearch: 1.1.0
+    dev: false
+
+  /chalk/5.1.2:
+    resolution: {integrity: sha512-E5CkT4jWURs1Vy5qGJye+XwCkNj7Od3Af7CP6SujMetSMkLs8Do2RWJK5yx1wamHV/op8Rz+9rltjaTQWDnEFQ==}
+    engines: {node: ^12.17.0 || ^14.13 || >=16.0.0}
     dev: false
 
   /chokidar/3.5.3:
