@@ -1,7 +1,7 @@
 lockfileVersion: 5.4
 
 specifiers:
-  '@tsconfig/node18': ^1.0.1
+  '@tsconfig/node16': ^1.0.3
   '@types/node': ^18.8.1
   '@xhayper/discord-rpc': ^1.0.8
   chokidar: ^3.5.3
@@ -21,7 +21,7 @@ dependencies:
   moment: 2.29.4
 
 devDependencies:
-  '@tsconfig/node18': 1.0.1
+  '@tsconfig/node16': 1.0.3
   '@types/node': 18.8.1
   discord-api-types: 0.37.11
   ts-node: 10.9.1_jrs6fgrkrfl5zdawlcdiuhuotq
@@ -67,10 +67,6 @@ packages:
 
   /@tsconfig/node16/1.0.3:
     resolution: {integrity: sha512-yOlFc+7UtL/89t2ZhjPvvB/DeAr3r+Dq58IgzsFkOAvVC6NMJXmCGjbptdXdR9qsX7pKcTL+s87FtYREi2dEEQ==}
-    dev: true
-
-  /@tsconfig/node18/1.0.1:
-    resolution: {integrity: sha512-sNFeK6X2ATlhlvzyH4kKYQlfHXE2f2/wxtB9ClvYXevWpmwkUT7VaSrjIN9E76Qebz8qP5JOJJ9jD3QoD/Z9TA==}
     dev: true
 
   /@types/node/18.8.1:

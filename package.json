@@ -1,6 +1,7 @@
 {
+  "type": "module",
   "scripts": {
-    "start": "node run"
+    "start": "npx ts-node run.ts"
   },
   "dependencies": {
     "@xhayper/discord-rpc": "^1.0.8",
@@ -10,7 +11,7 @@
     "moment": "^2.29.4"
   },
   "devDependencies": {
-    "@tsconfig/node18": "^1.0.1",
+    "@tsconfig/node16": "^1.0.3",
     "@types/node": "^18.8.1",
     "discord-api-types": "^0.37.11",
     "ts-node": "^10.9.1",
