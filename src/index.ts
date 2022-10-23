@@ -5,6 +5,7 @@ import { exit } from "process";
 import { getRecentTracks } from "lastfm-typed/dist/interfaces/userInterface.js";
 import config from "./config.js";
 import chokidar from "chokidar";
+import chalk from "chalk";
 import * as fs from "fs";
 const fsp = fs.promises;
 
@@ -15,7 +16,7 @@ const client = new Client({
 });
 
 if (!username) {
-  console.error("Please create the config.json file");
+  console.error(chalk.red("Please run editconfig to create the config"));
   exit(1);
 }
 
@@ -26,7 +27,10 @@ if (!username) {
 })();
 
 client.on("ready", async () => {
-  console.log("Ready!", client.user?.tag);
+  console.log(
+    chalk.green("Ready!"),
+    client.user?.username + chalk.gray(`#${client.user?.discriminator}`)
+  );
 
   setInterval(async () => {
     setActivity(await activity());
@@ -35,7 +39,7 @@ client.on("ready", async () => {
 
   const watcher = chokidar.watch(".kill");
   watcher.on("add", async () => {
-    console.warn("Found .kill file. Exiting...");
+    console.warn(chalk.red(`Found .kill file. ${chalk.bold("Exiting...")}`));
     setTimeout(async () => {
       try {
         await fsp.rm(".kill");
@@ -45,12 +49,14 @@ client.on("ready", async () => {
   });
 });
 
+const discordWord = chalk.hex("5865F2")("Discord");
+
 client.on("connected", () => {
-  console.log("Connected to Discord");
+  console.log(chalk.greenBright(`Connected to ${discordWord}`));
 });
 
 client.on("disconnected", () => {
-  console.log("Disconnected from Discord");
+  console.log(chalk.redBright(`Disconnected from ${discordWord}`));
 });
 
 client.login();
@@ -171,7 +177,7 @@ function setActivity(activity?: SetActivity): void {
 
 async function activity(): Promise<SetActivity | undefined> {
   if (hasOtherActivity()) {
-    status("🔇 Detected another player's Rich Presence");
+    status("Detected another player's Rich Presence");
     return;
   }
 
@@ -179,8 +185,8 @@ async function activity(): Promise<SetActivity | undefined> {
   try {
     recent = await lastfm.getLastTrack();
   } catch (e) {
-    console.error("Error from Last.fm");
-    console.log("\t", e);
+    console.error(chalk.red("Error from Last.fm"));
+    console.log(chalk.red(e));
     return;
   }
 

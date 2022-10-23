@@ -5,6 +5,7 @@
   },
   "dependencies": {
     "@xhayper/discord-rpc": "^1.0.8",
+    "chalk": "^5.1.2",
     "chokidar": "^3.5.3",
     "lastfm-typed": "^2.0.2",
     "lodash": "^4.17.21",
