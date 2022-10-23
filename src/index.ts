@@ -4,6 +4,9 @@ import { GatewayActivity } from "discord-api-types/v10";
 import { exit } from "process";
 import { getRecentTracks } from "lastfm-typed/dist/interfaces/userInterface";
 import config from "./config";
+import chokidar from "chokidar";
+import * as fs from "fs";
+const fsp = fs.promises;
 
 const { username } = config;
 const clientID = config.advanced.appId || "740140397162135563";
@@ -16,12 +19,28 @@ if (!username) {
   exit(1);
 }
 
+(async () => {
+  try {
+    await fsp.rm(".kill");
+  } catch {}
+})();
+
 client.on("ready", async () => {
   console.log("Ready!", client.user?.tag);
+
   setInterval(async () => {
     setActivity(await activity());
   }, 5000);
   setActivity(await activity());
+
+  const watcher = chokidar.watch(".kill");
+  watcher.on("add", async () => {
+    console.warn("Found .kill file. Exiting...");
+    try {
+      await fsp.rm(".kill");
+    } catch {}
+    exit();
+  });
 });
 
 client.on("connected", () => {
