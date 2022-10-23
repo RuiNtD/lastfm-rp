@@ -36,10 +36,12 @@ client.on("ready", async () => {
   const watcher = chokidar.watch(".kill");
   watcher.on("add", async () => {
     console.warn("Found .kill file. Exiting...");
-    try {
-      await fsp.rm(".kill");
-    } catch {}
-    exit();
+    setTimeout(async () => {
+      try {
+        await fsp.rm(".kill");
+      } catch {}
+      exit();
+    }, 1000);
   });
 });
 
