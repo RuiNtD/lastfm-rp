@@ -1,9 +1,9 @@
-import * as lastfm from "./lastFm";
+import * as lastfm from "./lastFm.js";
 import { Client, SetActivity } from "@xhayper/discord-rpc";
 import { GatewayActivity } from "discord-api-types/v10";
 import { exit } from "process";
-import { getRecentTracks } from "lastfm-typed/dist/interfaces/userInterface";
-import config from "./config";
+import { getRecentTracks } from "lastfm-typed/dist/interfaces/userInterface.js";
+import config from "./config.js";
 import chokidar from "chokidar";
 import * as fs from "fs";
 const fsp = fs.promises;

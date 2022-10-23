@@ -1,10 +1,10 @@
 import LastFMTyped from "lastfm-typed";
-import { getInfo } from "lastfm-typed/dist/interfaces/userInterface";
-import config from "./config";
+import { getInfo } from "lastfm-typed/dist/interfaces/userInterface.js";
+import config from "./config.js";
 
 const { username } = config;
 const apiKey = config.advanced.lastFmKey || "3b64424cee4803202edd52b060297958";
-const lastfm = new LastFMTyped(apiKey, {
+const lastfm = new LastFMTyped.default(apiKey, {
   userAgent: "https://github.com/FayneAldan/lastfm-rp",
 });
 
