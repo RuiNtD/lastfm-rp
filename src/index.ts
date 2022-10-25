@@ -185,8 +185,7 @@ async function activity(): Promise<SetActivity | undefined> {
   try {
     recent = await lastfm.getLastTrack();
   } catch (e) {
-    console.error(chalk.red("Error from Last.fm"));
-    console.log(chalk.red(e));
+    console.error(chalk.red("Error from Last.fm"), e);
     return;
   }
 
