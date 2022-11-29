@@ -13,10 +13,10 @@
   },
   "devDependencies": {
     "@tsconfig/node16": "^1.0.3",
-    "@types/node": "^18.11.6",
-    "discord-api-types": "^0.37.14",
+    "@types/node": "^18.11.9",
+    "discord-api-types": "^0.37.20",
     "ts-node": "^10.9.1",
-    "tslib": "^2.4.0",
-    "typescript": "^4.8.4"
+    "tslib": "^2.4.1",
+    "typescript": "^4.9.3"
   }
 }
