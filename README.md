@@ -4,7 +4,7 @@ Show your Last.fm Now Playing on your Discord profile
 
 ## Requirements
 
-- [NodeJS] & [pnpm]
+- [NodeJS]
 - Windows only: [WebView2 Runtime]
 - Mac and Linux only: [Deno]
 - Linux only: [GTK] and [WebKit2GTK] \
@@ -15,7 +15,7 @@ Show your Last.fm Now Playing on your Discord profile
 Run this commands in terminal:
 
 ```
-pnpm install
+npm install
 ```
 
 ### Mac / Linux
@@ -24,7 +24,6 @@ Also run these commands on Mac / Linux:
 
 ```
 chmod +x editconfig.js
-chmod +x manager.js
 chmod +x run.js
 ```
 
@@ -33,15 +32,13 @@ chmod +x run.js
 Please run `editconfig` (`.exe` on Windows or `.js` on Mac/Linux)
 once before running Last.fm RP to set the configuration.
 
-~~If you want Last.fm RP to run at startup, run `manager`~~
-(Coming Soon™️)
+An option to run Last.fm RP at startup is coming Soon™️
 
 ## Usage
 
 Run `run` to start Last.fm Rich Presence.
 
 [deno]: https://deno.land/
-[pnpm]: https://pnpm.io/installation
 [nodejs]: https://nodejs.org/en/
 [webview2 runtime]: https://go.microsoft.com/fwlink/p/?LinkId=2124703
 [gtk]: https://docs.gtk.org/gtk3/
