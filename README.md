@@ -4,9 +4,8 @@ Show your Last.fm Now Playing on your Discord profile
 
 ## Requirements
 
-- [NodeJS] and [PNPM]
+- [NodeJS], [Deno], and [PNPM]
 - Windows only: [WebView2 Runtime] (Comes with Windows 11)
-- Mac and Linux only: [Deno]
 - Linux only: [GTK] and [WebKit2GTK] \
   `apt install libgtk-3-0 libwebkit2gtk-4.0-37`
 
@@ -29,7 +28,7 @@ chmod +x run.js
 
 ## Configuration
 
-Please run `editconfig` (`.exe` on Windows or `.js` on Mac/Linux)
+Please run `editconfig` (`.bat` on Windows or `.js` on Mac/Linux)
 once before running Last.fm RP to set the configuration.
 
 The "Disable when another app's Rich Presence is detected" feature uses [Lanyard].
