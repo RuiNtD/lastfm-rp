@@ -1,22 +1,36 @@
-import LastFMTyped from "lastfm-typed";
-import { getInfo } from "lastfm-typed/dist/interfaces/userInterface.js";
+import {
+  LastFMUser,
+  LastFMUserGetInfoResponse,
+  LastFMUserGetRecentTracksResponse,
+} from "lastfm-ts-api";
 import config from "./config.js";
+import { lastFmWord } from "./index.js";
+import chalk from "chalk";
 
 const { username } = config;
 const apiKey = config.advanced.lastFmKey || "3b64424cee4803202edd52b060297958";
-const lastfm = new LastFMTyped.default(apiKey, {
-  userAgent: "https://github.com/FayneAldan/lastfm-rp",
-});
+const user = new LastFMUser(apiKey);
 
-export async function getLastTrack() {
-  return await lastfm.user.getRecentTracks(username, {
-    limit: 1,
-  });
+export type Track =
+  LastFMUserGetRecentTracksResponse["recenttracks"]["track"][number];
+export async function getLastTrack(): Promise<Track | undefined> {
+  try {
+    const tracks = await user.getRecentTracks({ user: username, limit: 1 });
+    return tracks.recenttracks.track[0];
+  } catch (e) {
+    console.error(lastFmWord, chalk.red("Error"), e);
+    return;
+  }
 }
 
-let cachedUser: getInfo;
+let cachedUser: LastFMUserGetInfoResponse["user"];
 export async function getUser() {
-  if (cachedUser) return cachedUser;
-  cachedUser = await lastfm.user.getInfo(username);
-  return cachedUser;
+  try {
+    if (cachedUser) return cachedUser;
+    cachedUser = (await user.getInfo({ user: username })).user;
+    return cachedUser;
+  } catch (e) {
+    console.error(lastFmWord, chalk.red("Error"), e);
+    return;
+  }
 }

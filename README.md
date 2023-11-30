@@ -4,18 +4,18 @@ Show your Last.fm Now Playing on your Discord profile
 
 ## Requirements
 
-- [NodeJS]
-- Windows only: [WebView2 Runtime]
+- [NodeJS] and [PNPM]
+- Windows only: [WebView2 Runtime] (Comes with Windows 11)
 - Mac and Linux only: [Deno]
 - Linux only: [GTK] and [WebKit2GTK] \
   `apt install libgtk-3-0 libwebkit2gtk-4.0-37`
 
 ## Installation
 
-Run this commands in terminal:
+Run this command in terminal:
 
 ```
-npm install
+pnpm install
 ```
 
 ### Mac / Linux
@@ -32,14 +32,20 @@ chmod +x run.js
 Please run `editconfig` (`.exe` on Windows or `.js` on Mac/Linux)
 once before running Last.fm RP to set the configuration.
 
+The "Disable when another app's Rich Presence is detected" feature uses [Lanyard].
+If you would like to use this feature, you will need to join the [Lanyard Discord].
+
 An option to run Last.fm RP at startup is coming Soon™️
 
 ## Usage
 
 Run `run` to start Last.fm Rich Presence.
 
-[deno]: https://deno.land/
 [nodejs]: https://nodejs.org/en/
+[pnpm]: https://pnpm.io/
+[deno]: https://deno.land/
 [webview2 runtime]: https://go.microsoft.com/fwlink/p/?LinkId=2124703
 [gtk]: https://docs.gtk.org/gtk3/
 [webkit2gtk]: https://webkitgtk.org/
+[lanyard]: https://github.com/Phineas/lanyard
+[lanyard discord]: https://discord.gg/lanyard
