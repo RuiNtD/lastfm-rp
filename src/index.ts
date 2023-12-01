@@ -87,42 +87,20 @@ export async function getDiscordUser() {
   return client.user;
 }
 
-/*const removeCommand = cumcord.commands.addCommand({
-  name: "lastfm",
-  description: "Send your Last.fm status",
-  args: [
-    {
-      name: "textOnly",
-      description: "Sends text instead of an image.",
-      type: "bool",
-      required: false,
-    },
-  ],
-  handler: async (ctx, send) => {
-    const { textOnly } = ctx.args;
-
-    const username = store.username;
-    if (!username) {
-      send(
-        "❌ Please add your Last.fm username in the Last.fm Rich Presence settings"
-      );
-      return;
-    }
-
-    try {
-      if (textOnly) return await genPlayText();
-      else {
-        const image = await genPlayImage();
-        const arrayBuffer = await image.arrayBuffer();
-        const file = new File([Buffer.from(arrayBuffer)], "lastfm.png", {
-          type: "image/png",
-        });
-        promptToUpload([file], ctx.channel, 0);
-      }
-    } catch (e) {
-      send("❌ Error: " + e);
-    }
-  },
+/*
+try {
+  if (textOnly) return await genPlayText();
+  else {
+    const image = await genPlayImage();
+    const arrayBuffer = await image.arrayBuffer();
+    const file = new File([Buffer.from(arrayBuffer)], "lastfm.png", {
+      type: "image/png",
+    });
+    promptToUpload([file], ctx.channel, 0);
+  }
+} catch (e) {
+  send("❌ Error: " + e);
+}
 });*/
 
 function status(status: string = "") {
