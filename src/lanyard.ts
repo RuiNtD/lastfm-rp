@@ -1,10 +1,11 @@
-import { ActivityType } from "discord-api-types/v10";
+import { ActivityType } from "discord-api-types/v10.ts";
 import { z } from "zod";
-import { WebSocket } from "ws";
-import { lanyardWord, getDiscordUser } from "./index.js";
-import chalk from "chalk";
-import config from "./config.js";
-import { scheduler } from "timers/promises";
+import { getDiscordUser } from "./discord.ts";
+import { colors } from "cliffy/ansi/colors.ts";
+import config from "./config.ts";
+import { delay } from "std/async/mod.ts";
+
+const lanyardWord = colors.bold.rgb24("[Lanyard]", 0xd7bb87);
 
 export { ActivityType };
 
@@ -74,19 +75,17 @@ function isEmpty(d: unknown): d is LanyardEmptyData {
   return LanyardEmptyData.safeParse(d).success;
 }
 
-function subscribe() {}
-
 function connect() {
   ws = new WebSocket("wss://api.lanyard.rest/socket");
 
-  ws.on("message", async (raw) => {
-    const obj = JSON.parse(raw.toString("utf8"));
+  ws.onmessage = async (event) => {
+    const obj = JSON.parse(event.data);
     // console.log(obj);
     const msg = LanyardWSMsg.parse(obj);
     const { id } = await getDiscordUser();
     // console.log(msg);
     switch (msg.op) {
-      case LanyardWSOpcodes.Event:
+      case LanyardWSOpcodes.Event: {
         const { d } = msg;
         if (isEmpty(d)) {
           if (!firstWarn)
@@ -97,31 +96,33 @@ function connect() {
           if (d.discord_user.id == id) lanyardCache = d;
         } else if (d[id]) lanyardCache = d[id];
         gotFirstData = true;
-        return;
-      case LanyardWSOpcodes.Hello:
-        addID(id);
+        break;
+      }
+      case LanyardWSOpcodes.Hello: {
         setInterval(() => {
           ws.send(JSON.stringify({ op: LanyardWSOpcodes.Heartbeat }));
         }, msg.d.heartbeat_interval);
-        return;
+        await addID(id);
+        break;
+      }
     }
-  });
+  };
 
   ws.onopen = () => {
-    console.log(lanyardWord, chalk.greenBright("Connected"));
+    console.log(lanyardWord, colors.brightGreen("Connected"));
   };
 
   ws.onclose = async () => {
-    console.log(lanyardWord, chalk.redBright("Disconnected"));
-    await scheduler.wait(5000);
+    console.log(lanyardWord, colors.brightRed("Disconnected"));
+    await delay(5000);
     connect();
   };
 
   ws.onerror = async (e) => {
-    console.log(lanyardWord, chalk.redBright("Error"), e);
-    ws.removeAllListeners();
+    console.log(lanyardWord, colors.brightRed("Error"), e);
+    ws.onclose = null;
     ws.close();
-    await scheduler.wait(5000);
+    await delay(5000);
     connect();
   };
 }
@@ -132,10 +133,11 @@ async function addID(id: string) {
   connectIDs.push(id);
 
   while (ws.readyState != WebSocket.OPEN) {
-    await scheduler.yield();
+    await delay(0);
   }
 
   gotFirstData = false;
+  // console.log("subscribing", connectIDs);
   ws.send(
     JSON.stringify({
       op: LanyardWSOpcodes.Initalize,
@@ -144,27 +146,9 @@ async function addID(id: string) {
   );
 }
 
-const LanyardResponseSuccess = z.object({
-  success: z.literal(true),
-  data: LanyardData,
-});
-
-const LanyardResponseFailure = z.object({
-  success: z.literal(false),
-  error: z.object({
-    code: z.string(),
-    message: z.string(),
-  }),
-});
-
-const LanyardResponse = z.discriminatedUnion("success", [
-  LanyardResponseSuccess,
-  LanyardResponseFailure,
-]);
-
 export async function getLanyard() {
   while (!gotFirstData) {
-    await scheduler.yield();
+    await delay(0);
   }
 
   const { id } = await getDiscordUser();

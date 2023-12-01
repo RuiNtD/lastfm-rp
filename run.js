@@ -1,2 +1,2 @@
-#!/usr/bin/env -S node --loader ts-node/esm
-import "./src/index.js";
+#!/usr/bin/env -S deno run -A --unstable-ffi
+import "./src/index.ts";

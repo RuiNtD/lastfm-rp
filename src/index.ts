@@ -1,17 +1,12 @@
-import * as lastfm from "./lastFm.js";
-import { Client, SetActivity } from "@xhayper/discord-rpc";
-import { GatewayActivityButton } from "discord-api-types/v10";
-import { exit } from "process";
-import config, { clientID } from "./config.js";
+import * as lastfm from "./lastFm.ts";
+import { Activity } from "discord_rpc";
+import { GatewayActivityButton } from "discord-api-types/v10.ts";
+import config from "./config.ts";
 import chokidar from "chokidar";
-import chalk from "chalk";
-import * as fs from "fs/promises";
-import { hasOtherActivity } from "./otherIDs.js";
-import { scheduler } from "timers/promises";
-
-export const discordWord = chalk.bold.hex("#5865f2")("[Discord]");
-export const lastFmWord = chalk.bold.hex("#ba0000")("[Last.fm]");
-export const lanyardWord = chalk.bold.hex("#d7bb87")("[Lanyard]");
+import { colors } from "cliffy/ansi/colors.ts";
+import { hasOtherActivity } from "./otherIDs.ts";
+import { delay } from "std/async/mod.ts";
+import { setActivity } from "./discord.ts";
 
 let lastStatus = {
   status: "",
@@ -19,65 +14,31 @@ let lastStatus = {
 };
 
 const { username } = config;
-const client = new Client({
-  clientId: clientID,
-});
-
 if (!username) {
-  console.error(chalk.red("Please run editconfig to create the config"));
-  exit(1);
+  console.error(colors.red("Please run editconfig to create the config"));
+  Deno.exit(1);
 }
 
 (async () => {
   try {
-    await fs.rm(".kill");
+    await Deno.remove(".kill");
   } catch {}
 })();
 
 const watcher = chokidar.watch(".kill");
 watcher.on("add", async () => {
-  console.warn(chalk.red(`Found .kill file. ${chalk.bold("Exiting...")}`));
-  await scheduler.wait(1000);
+  console.warn(colors.red(`Found .kill file. ${colors.bold("Exiting...")}`));
+  await delay(1000);
   try {
-    await fs.rm(".kill");
+    await Deno.remove(".kill");
   } catch {}
-  exit();
+  Deno.exit();
 });
-
-client.on("connected", () => {
-  console.log(
-    discordWord,
-    chalk.bold.green("Ready!"),
-    client.user?.username + chalk.gray(`#${client.user?.discriminator}`)
-  );
-});
-
-client.on("disconnected", async () => {
-  console.log(discordWord, chalk.redBright("Disconnected"));
-});
-
-async function plsConnect() {
-  if (client.isConnected) return;
-  try {
-    await client.connect();
-  } catch (e) {
-    // console.error(discordWord, "Failed to reconnect", e);
-  }
-}
-await plsConnect();
-setInterval(plsConnect, 5000);
 
 setActivity(await activity());
 setInterval(async () => {
   setActivity(await activity());
 }, 5000);
-
-export async function getDiscordUser() {
-  while (!client.user) {
-    await scheduler.yield();
-  }
-  return client.user;
-}
 
 /*
 try {
@@ -95,7 +56,7 @@ try {
 }
 });*/
 
-function status(status: string = "") {
+export function status(status = "") {
   if (lastStatus.status != status) {
     lastStatus = {
       status,
@@ -105,26 +66,14 @@ function status(status: string = "") {
   }
 }
 
-function setActivity(activity?: SetActivity): void {
-  if (!client.isConnected) return;
-
-  if (activity) client.user?.setActivity(activity);
-  else client.user?.clearActivity();
-}
-
-async function activity(): Promise<SetActivity | undefined> {
-  if (!client.isConnected) {
-    status();
-    return;
-  }
-
+async function activity(): Promise<Activity | undefined> {
   const otherAct = await hasOtherActivity();
   if (otherAct) {
     status(`Detected another player: ${otherAct.name}`);
     return;
   }
 
-  let track = await lastfm.getLastTrack();
+  const track = await lastfm.getLastTrack();
   if (!track || !track["@attr"]?.nowplaying) {
     status("Nothing playing");
     return;
@@ -156,12 +105,16 @@ async function activity(): Promise<SetActivity | undefined> {
     details: track.name,
     state: `by ${track.artist["#text"]}`,
 
-    largeImageKey: track.image[track.image.length - 1]["#text"],
-    smallImageKey,
-    largeImageText: track.album["#text"],
-    smallImageText,
+    assets: {
+      large_image: track.image[track.image.length - 1]["#text"],
+      large_text: track.album["#text"],
+      small_image: smallImageKey,
+      small_text: smallImageText,
+    },
 
-    startTimestamp: lastStatus.date,
+    timestamps: {
+      start: lastStatus.date.getTime(),
+    },
 
     buttons,
   };

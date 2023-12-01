@@ -1,4 +1,3 @@
-import * as fs from "fs/promises";
 import { z } from "zod";
 
 export const OtherConfig = z.object({
@@ -27,7 +26,7 @@ const Config = z.object({
   }),
 });
 
-const file = await fs.readFile("config.json", { encoding: "utf8" });
+const file = await Deno.readTextFile("config.json");
 const config = Config.parse(JSON.parse(file));
 
 export const clientID = config.advanced.appId || "740140397162135563";

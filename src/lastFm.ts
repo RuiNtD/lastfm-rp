@@ -3,9 +3,10 @@ import {
   LastFMUserGetInfoResponse,
   LastFMUserGetRecentTracksResponse,
 } from "lastfm-ts-api";
-import config from "./config.js";
-import { lastFmWord } from "./index.js";
-import chalk from "chalk";
+import config from "./config.ts";
+import { colors } from "cliffy/ansi/colors.ts";
+
+const lastFmWord = colors.bold.rgb24("[Last.fm]", 0xba0000);
 
 const { username } = config;
 const apiKey = config.advanced.lastFmKey || "3b64424cee4803202edd52b060297958";
@@ -18,7 +19,7 @@ export async function getLastTrack(): Promise<Track | undefined> {
     const tracks = await user.getRecentTracks({ user: username, limit: 1 });
     return tracks.recenttracks.track[0];
   } catch (e) {
-    console.error(lastFmWord, chalk.red("Error"), e);
+    console.error(lastFmWord, colors.red("Error"), e);
     return;
   }
 }
@@ -30,7 +31,7 @@ export async function getUser() {
     cachedUser = (await user.getInfo({ user: username })).user;
     return cachedUser;
   } catch (e) {
-    console.error(lastFmWord, chalk.red("Error"), e);
+    console.error(lastFmWord, colors.red("Error"), e);
     return;
   }
 }

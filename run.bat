@@ -1,3 +1,3 @@
 @echo off
 title Last.fm Rich Presence
-pnpm start
+deno run -A --unstable-ffi run.js

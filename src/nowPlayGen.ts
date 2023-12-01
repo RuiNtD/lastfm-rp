@@ -1,6 +1,6 @@
 // @ts-nocheck
 
-import { getLastTrack } from "./lastFm.js";
+import { getLastTrack } from "./lastFm.ts";
 import moment from "moment";
 
 const bgImg = new Image();

@@ -1,5 +1,5 @@
-import config, { OtherConfig, clientID } from "./config.js";
-import { ActivityType, LanyardActivity, getLanyard } from "./lanyard.js";
+import config, { OtherConfig, clientID } from "./config.ts";
+import { ActivityType, LanyardActivity, getLanyard } from "./lanyard.ts";
 
 type OtherKey = Exclude<keyof OtherConfig, "any" | "listening" | "custom">;
 const OtherAppIDs: { [appName in OtherKey]: string[] } = {
