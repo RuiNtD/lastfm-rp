@@ -1,7 +1,7 @@
 {
   "type": "module",
   "scripts": {
-    "start": "node --loader ts-node/esm run.js"
+    "start": "npx tsc && node dist/index.js"
   },
   "dependencies": {
     "@xhayper/discord-rpc": "^1.1.0",
