@@ -9,9 +9,10 @@ import { scheduler } from "timers/promises";
 export { ActivityType };
 
 export const LanyardActivity = z.object({
-  type: z.nativeEnum(ActivityType),
   id: z.string(),
   name: z.string(),
+  type: z.nativeEnum(ActivityType),
+  application_id: z.string().optional(),
 });
 export type LanyardActivity = z.infer<typeof LanyardActivity>;
 

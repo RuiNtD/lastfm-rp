@@ -33,7 +33,7 @@ function getBlockedIDs(): string[] {
 export async function hasOtherActivity(): Promise<LanyardActivity | undefined> {
   if (!config.otherEnabled || !config.other) return;
   const activities = (await getUserActivities()).filter(
-    (v) => v.id != clientID
+    (v) => v.application_id != clientID && v.id != "custom"
   );
 
   if (config.other.any) {
@@ -45,6 +45,6 @@ export async function hasOtherActivity(): Promise<LanyardActivity | undefined> {
   return activities.find(
     (v) =>
       (config.other?.listening && v.type == ActivityType.Listening) ||
-      blockedIDs.includes(v.id)
+      (v.application_id && blockedIDs.includes(v.application_id))
   );
 }
