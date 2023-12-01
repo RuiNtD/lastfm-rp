@@ -120,8 +120,9 @@ function setActivity(activity?: SetActivity): void {
 }
 
 async function activity(): Promise<SetActivity | undefined> {
-  if (await hasOtherActivity()) {
-    status("Detected another player's Rich Presence");
+  const otherAct = await hasOtherActivity();
+  if (otherAct) {
+    status(`Detected another player: ${otherAct.name}`);
     return;
   }
 

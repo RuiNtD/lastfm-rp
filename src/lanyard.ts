@@ -1,13 +1,16 @@
 import { ActivityType } from "discord-api-types/v10";
-import { promise, z } from "zod";
+import { z } from "zod";
 import { WebSocket } from "ws";
 import { lanyardWord, clientUser } from "./index.js";
 import chalk from "chalk";
 import config from "./config.js";
 
+export { ActivityType };
+
 export const LanyardActivity = z.object({
   type: z.nativeEnum(ActivityType),
   id: z.string(),
+  name: z.string(),
 });
 export type LanyardActivity = z.infer<typeof LanyardActivity>;
 

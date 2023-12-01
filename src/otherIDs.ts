@@ -1,6 +1,6 @@
 import config, { OtherConfig, clientID } from "./config.js";
 import { clientUser } from "./index.js";
-import { LanyardActivity, getLanyard } from "./lanyard.js";
+import { ActivityType, LanyardActivity, getLanyard } from "./lanyard.js";
 
 type OtherKey = Exclude<keyof OtherConfig, "any" | "listening" | "custom">;
 const OtherAppIDs: { [appName in OtherKey]: string[] } = {
@@ -23,33 +23,30 @@ async function getUserActivities(): Promise<LanyardActivity[]> {
   return res?.activities || [];
 }
 
-export async function hasOtherActivity(): Promise<boolean> {
-  if (!config.otherEnabled || !config.other) return false;
-  const activities = await getUserActivities();
-  if (!activities) return false;
+function getBlockedIDs(): string[] {
+  let ids: string[] = [];
+  if (!config.other) return [];
+  for (const appName of Object.keys(OtherAppIDs) as OtherKey[]) {
+    if (config.other[appName]) ids = ids.concat(OtherAppIDs[appName]);
+  }
+  return ids;
+}
+
+export async function hasOtherActivity(): Promise<LanyardActivity | undefined> {
+  if (!config.otherEnabled || !config.other) return;
+  const activities = (await getUserActivities()).filter(
+    (v) => v.id != clientID
+  );
 
   if (config.other.any) {
-    for (const { type, id: appID } of activities) {
-      if (appID != clientID) return true;
-    }
-    return false;
+    const act = activities.at(0);
+    return act;
   }
 
-  if (config.other.listening) {
-    for (const { type, id: appID } of activities) {
-      if (appID == clientID) continue;
-      if (type == 2) return true;
-    }
-  }
-
-  const actAppIDs = activities.map((v) => v.id);
-  for (const appName of Object.keys(OtherAppIDs) as OtherKey[]) {
-    if (!config.other[appName]) continue;
-    const appIDs = OtherAppIDs[appName];
-    for (const appID of appIDs) {
-      if (actAppIDs.includes(appID)) return true;
-    }
-  }
-
-  return false;
+  const blockedIDs = getBlockedIDs();
+  return activities.find(
+    (v) =>
+      (config.other?.listening && v.type == ActivityType.Listening) ||
+      blockedIDs.includes(v.id)
+  );
 }
