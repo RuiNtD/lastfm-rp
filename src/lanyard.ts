@@ -1,9 +1,10 @@
 import { ActivityType } from "discord-api-types/v10";
 import { z } from "zod";
 import { WebSocket } from "ws";
-import { lanyardWord, clientUser } from "./index.js";
+import { lanyardWord, getDiscordUser } from "./index.js";
 import chalk from "chalk";
 import config from "./config.js";
+import { scheduler } from "timers/promises";
 
 export { ActivityType };
 
@@ -48,23 +49,26 @@ const LanyardWSMsg = z.discriminatedUnion("op", [
 ]);
 
 let lanyardCache: LanyardData;
+let gotFirstData = false;
 
 function connect() {
-  const ws = new WebSocket("wss://api.lanyard.rest/socket", {});
+  const ws = new WebSocket("wss://api.lanyard.rest/socket");
 
-  ws.on("message", (raw) => {
+  ws.on("message", async (raw) => {
     const obj = JSON.parse(raw.toString("utf8"));
     const msg = LanyardWSMsg.parse(obj);
     // console.log(msg);
     switch (msg.op) {
       case LanyardWSOpcodes.Event:
         lanyardCache = msg.d;
+        gotFirstData = true;
         return;
       case LanyardWSOpcodes.Hello:
         ws.send(
           JSON.stringify({
             op: LanyardWSOpcodes.Initalize,
-            d: { subscribe_to_id: clientUser.id },
+            // TODO: Handle switching accounts on Discord
+            d: { subscribe_to_id: (await getDiscordUser()).id },
           })
         );
         setInterval(() => {
@@ -108,6 +112,9 @@ const LanyardResponse = z.discriminatedUnion("success", [
   LanyardResponseFailure,
 ]);
 
-export function getLanyard() {
+export async function getLanyard() {
+  while (!gotFirstData) {
+    await scheduler.yield();
+  }
   return lanyardCache;
 }

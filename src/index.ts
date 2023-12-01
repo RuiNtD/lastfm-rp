@@ -7,10 +7,16 @@ import chokidar from "chokidar";
 import chalk from "chalk";
 import * as fs from "fs/promises";
 import { hasOtherActivity } from "./otherIDs.js";
+import { scheduler } from "timers/promises";
 
 export const discordWord = chalk.bold.hex("#5865f2")("[Discord]");
 export const lastFmWord = chalk.bold.hex("#ba0000")("[Last.fm]");
 export const lanyardWord = chalk.bold.hex("#d7bb87")("[Lanyard]");
+
+let lastStatus = {
+  status: "",
+  date: new Date(),
+};
 
 const { username } = config;
 const client = new Client({
@@ -28,34 +34,58 @@ if (!username) {
   } catch {}
 })();
 
-await client.connect();
-console.log(
-  discordWord,
-  chalk.green("Ready!"),
-  client.user?.username + chalk.gray(`#${client.user?.discriminator}`)
-);
-
-if (!client.user) throw "This shouldn't happen.";
-export const clientUser = client.user;
-
 const watcher = chokidar.watch(".kill");
 watcher.on("add", async () => {
   console.warn(chalk.red(`Found .kill file. ${chalk.bold("Exiting...")}`));
-  setTimeout(async () => {
-    try {
-      await fs.rm(".kill");
-    } catch {}
-    exit();
-  }, 1000);
+  await scheduler.wait(1000);
+  try {
+    await fs.rm(".kill");
+  } catch {}
+  exit();
 });
 
 client.on("connected", () => {
   console.log(discordWord, chalk.greenBright("Connected"));
 });
 
-client.on("disconnected", () => {
+client.on("disconnected", async () => {
   console.log(discordWord, chalk.redBright("Disconnected"));
+  await plsConnect();
 });
+
+async function plsConnect() {
+  if (client.isConnected) return;
+  while (true) {
+    try {
+      await client.connect();
+      break;
+    } catch (e) {
+      // console.error(discordWord, "Failed to reconnect", e);
+    }
+    await scheduler.wait(5000);
+  }
+}
+
+console.log(discordWord, "Connecting...");
+await plsConnect();
+
+console.log(
+  discordWord,
+  chalk.bold.green("Ready!"),
+  client.user?.username + chalk.gray(`#${client.user?.discriminator}`)
+);
+
+setActivity(await activity());
+setInterval(async () => {
+  setActivity(await activity());
+}, 5000);
+
+export async function getDiscordUser() {
+  while (!client.user) {
+    await scheduler.yield();
+  }
+  return client.user;
+}
 
 /*const removeCommand = cumcord.commands.addCommand({
   name: "lastfm",
@@ -95,31 +125,29 @@ client.on("disconnected", () => {
   },
 });*/
 
-let lastStatus = {
-  status: "",
-  date: new Date(),
-};
-
-setInterval(async () => {
-  setActivity(await activity());
-}, 5000);
-
-function status(status: string) {
+function status(status: string = "") {
   if (lastStatus.status != status) {
     lastStatus = {
       status,
       date: new Date(),
     };
-    console.log(status);
+    if (status) console.log(status);
   }
 }
 
 function setActivity(activity?: SetActivity): void {
+  if (!client.isConnected) return;
+
   if (activity) client.user?.setActivity(activity);
   else client.user?.clearActivity();
 }
 
 async function activity(): Promise<SetActivity | undefined> {
+  if (!client.isConnected) {
+    status();
+    return;
+  }
+
   const otherAct = await hasOtherActivity();
   if (otherAct) {
     status(`Detected another player: ${otherAct.name}`);

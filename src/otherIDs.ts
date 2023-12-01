@@ -1,5 +1,4 @@
 import config, { OtherConfig, clientID } from "./config.js";
-import { clientUser } from "./index.js";
 import { ActivityType, LanyardActivity, getLanyard } from "./lanyard.js";
 
 type OtherKey = Exclude<keyof OtherConfig, "any" | "listening" | "custom">;
@@ -18,8 +17,7 @@ const OtherAppIDs: { [appName in OtherKey]: string[] } = {
 };
 
 async function getUserActivities(): Promise<LanyardActivity[]> {
-  const id = clientUser.id;
-  const res = getLanyard();
+  const res = await getLanyard();
   return res?.activities || [];
 }
 
