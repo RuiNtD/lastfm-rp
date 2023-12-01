@@ -45,35 +45,27 @@ watcher.on("add", async () => {
 });
 
 client.on("connected", () => {
-  console.log(discordWord, chalk.greenBright("Connected"));
+  console.log(
+    discordWord,
+    chalk.bold.green("Ready!"),
+    client.user?.username + chalk.gray(`#${client.user?.discriminator}`)
+  );
 });
 
 client.on("disconnected", async () => {
   console.log(discordWord, chalk.redBright("Disconnected"));
-  await plsConnect();
 });
 
 async function plsConnect() {
   if (client.isConnected) return;
-  while (true) {
-    try {
-      await client.connect();
-      break;
-    } catch (e) {
-      // console.error(discordWord, "Failed to reconnect", e);
-    }
-    await scheduler.wait(5000);
+  try {
+    await client.connect();
+  } catch (e) {
+    // console.error(discordWord, "Failed to reconnect", e);
   }
 }
-
-console.log(discordWord, "Connecting...");
 await plsConnect();
-
-console.log(
-  discordWord,
-  chalk.bold.green("Ready!"),
-  client.user?.username + chalk.gray(`#${client.user?.discriminator}`)
-);
+setInterval(plsConnect, 5000);
 
 setActivity(await activity());
 setInterval(async () => {

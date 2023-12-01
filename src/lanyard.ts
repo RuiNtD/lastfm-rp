@@ -16,13 +16,17 @@ export const LanyardActivity = z.object({
 });
 export type LanyardActivity = z.infer<typeof LanyardActivity>;
 
-export const LanyardData = z
-  .object({
-    listening_to_spotify: z.boolean(),
-    activities: LanyardActivity.array(),
-  })
-  .optional();
+export const LanyardData = z.object({
+  discord_user: z.object({
+    id: z.string(),
+  }),
+  activities: LanyardActivity.array(),
+  listening_to_spotify: z.boolean(),
+});
 export type LanyardData = z.infer<typeof LanyardData>;
+
+const LanyardEmptyData = z.record(z.never());
+export type LanyardEmptyData = z.infer<typeof LanyardEmptyData>;
 
 enum LanyardWSOpcodes {
   Event,
@@ -31,11 +35,17 @@ enum LanyardWSOpcodes {
   Heartbeat,
 }
 
-const LanyardWSEvent = z.object({
+const LanyardWSInitState = z.object({
   op: z.literal(LanyardWSOpcodes.Event),
-  t: z.enum(["INIT_STATE", "PRESENCE_UPDATE"]),
+  t: z.literal("INIT_STATE"),
+  d: z.union([LanyardData, LanyardEmptyData, z.record(LanyardData)]),
+});
+const LanyardWSPresenceUpdate = z.object({
+  op: z.literal(LanyardWSOpcodes.Event),
+  t: z.literal("PRESENCE_UPDATE"),
   d: LanyardData,
 });
+type LanyardWSPresenceUpdate = z.infer<typeof LanyardWSPresenceUpdate>;
 
 const LanyardWSHello = z.object({
   op: z.literal(LanyardWSOpcodes.Hello),
@@ -44,34 +54,52 @@ const LanyardWSHello = z.object({
   }),
 });
 
-const LanyardWSMsg = z.discriminatedUnion("op", [
-  LanyardWSEvent,
+const LanyardWSMsg = z.union([
+  LanyardWSInitState,
+  LanyardWSPresenceUpdate,
   LanyardWSHello,
 ]);
 
-let lanyardCache: LanyardData;
+let lanyardCache: LanyardData | undefined;
 let gotFirstData = false;
+let ws: WebSocket;
+const connectIDs: string[] = [];
+let firstWarn = false;
+
+function isData(d: unknown): d is LanyardData {
+  return LanyardData.safeParse(d).success;
+}
+
+function isEmpty(d: unknown): d is LanyardEmptyData {
+  return LanyardEmptyData.safeParse(d).success;
+}
+
+function subscribe() {}
 
 function connect() {
-  const ws = new WebSocket("wss://api.lanyard.rest/socket");
+  ws = new WebSocket("wss://api.lanyard.rest/socket");
 
   ws.on("message", async (raw) => {
     const obj = JSON.parse(raw.toString("utf8"));
+    // console.log(obj);
     const msg = LanyardWSMsg.parse(obj);
+    const { id } = await getDiscordUser();
     // console.log(msg);
     switch (msg.op) {
       case LanyardWSOpcodes.Event:
-        lanyardCache = msg.d;
+        const { d } = msg;
+        if (isEmpty(d)) {
+          if (!firstWarn)
+            console.log(lanyardWord, "Please join discord.gg/lanyard");
+          firstWarn = true;
+          lanyardCache = undefined;
+        } else if (isData(d)) {
+          if (d.discord_user.id == id) lanyardCache = d;
+        } else if (d[id]) lanyardCache = d[id];
         gotFirstData = true;
         return;
       case LanyardWSOpcodes.Hello:
-        ws.send(
-          JSON.stringify({
-            op: LanyardWSOpcodes.Initalize,
-            // TODO: Handle switching accounts on Discord
-            d: { subscribe_to_id: (await getDiscordUser()).id },
-          })
-        );
+        addID(id);
         setInterval(() => {
           ws.send(JSON.stringify({ op: LanyardWSOpcodes.Heartbeat }));
         }, msg.d.heartbeat_interval);
@@ -83,17 +111,38 @@ function connect() {
     console.log(lanyardWord, chalk.greenBright("Connected"));
   };
 
-  ws.onclose = () => {
+  ws.onclose = async () => {
     console.log(lanyardWord, chalk.redBright("Disconnected"));
-    setTimeout(connect, 5000);
+    await scheduler.wait(5000);
+    connect();
   };
 
-  ws.onerror = (e) => {
+  ws.onerror = async (e) => {
     console.log(lanyardWord, chalk.redBright("Error"), e);
+    ws.removeAllListeners();
     ws.close();
+    await scheduler.wait(5000);
+    connect();
   };
 }
 if (config.otherEnabled) connect();
+
+async function addID(id: string) {
+  if (connectIDs.includes(id)) return;
+  connectIDs.push(id);
+
+  while (ws.readyState != WebSocket.OPEN) {
+    await scheduler.yield();
+  }
+
+  gotFirstData = false;
+  ws.send(
+    JSON.stringify({
+      op: LanyardWSOpcodes.Initalize,
+      d: { subscribe_to_ids: connectIDs },
+    })
+  );
+}
 
 const LanyardResponseSuccess = z.object({
   success: z.literal(true),
@@ -117,5 +166,9 @@ export async function getLanyard() {
   while (!gotFirstData) {
     await scheduler.yield();
   }
+
+  const { id } = await getDiscordUser();
+  await addID(id);
+
   return lanyardCache;
 }
