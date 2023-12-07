@@ -81,7 +81,12 @@ async function activity(): Promise<Activity | undefined> {
 
   status(`Now playing: ${track.name}`);
 
-  const buttons: GatewayActivityButton[] = [];
+  const buttons: GatewayActivityButton[] = [
+    {
+      label: "View Song",
+      url: track.url,
+    },
+  ];
   let smallImageKey = "lastfm";
   let smallImageText = "Scrobbling now ";
 
@@ -96,10 +101,6 @@ async function activity(): Promise<Activity | undefined> {
   }
 
   smallImageText += "on Last.fm";
-  buttons.push({
-    label: "View Song",
-    url: track.url,
-  });
 
   return {
     details: track.name,
