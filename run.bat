@@ -1,3 +1,3 @@
 @echo off
 title Last.fm Rich Presence
-deno run -A --unstable-ffi run.js
+deno run -A run.js

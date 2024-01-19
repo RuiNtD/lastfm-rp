@@ -1,3 +1,3 @@
 @echo off
 title Last.fm Rich Presence Config Editor
-deno run -A --unstable-ffi editconfig.js
+deno run -A editconfig.js
