@@ -7,6 +7,9 @@ import { colors } from "cliffy/ansi/colors.ts";
 import { hasOtherActivity } from "./otherIDs.ts";
 import { delay } from "std/async/mod.ts";
 import { setActivity } from "./discord.ts";
+import { getLogger } from "./logger.ts";
+
+const log = getLogger();
 
 let lastStatus = {
   status: "",
@@ -15,7 +18,7 @@ let lastStatus = {
 
 const { username } = config;
 if (!username) {
-  console.error(colors.red("Please run editconfig to create the config"));
+  log.error(colors.red("Please run editconfig to create the config"));
   Deno.exit(1);
 }
 
@@ -27,7 +30,7 @@ if (!username) {
 
 const watcher = chokidar.watch(".kill");
 watcher.on("add", async () => {
-  console.warn(colors.red(`Found .kill file. ${colors.bold("Exiting...")}`));
+  log.info(colors.red(`Found .kill file. ${colors.bold("Exiting...")}`));
   await delay(1000);
   try {
     await Deno.remove(".kill");
@@ -62,7 +65,7 @@ export function status(status = "") {
       status,
       date: new Date(),
     };
-    if (status) console.log(status);
+    if (status) log.info(status);
   }
 }
 
@@ -79,7 +82,7 @@ async function activity(): Promise<Activity | undefined> {
     return;
   }
 
-  status(`Now playing: ${track.name}`);
+  status(`Now playing: ${track.name} by ${track.artist["#text"]}`);
 
   const buttons: GatewayActivityButton[] = [
     {

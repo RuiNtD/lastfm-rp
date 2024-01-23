@@ -4,8 +4,9 @@ import { getDiscordUser } from "./discord.ts";
 import { colors } from "cliffy/ansi/colors.ts";
 import config from "./config.ts";
 import { delay } from "std/async/mod.ts";
+import { getLogger } from "./logger.ts";
 
-const lanyardWord = colors.bold.rgb24("[Lanyard]", 0xd7bb87);
+const log = getLogger(colors.bold.rgb24("[Lanyard]", 0xd7bb87));
 
 export { ActivityType };
 
@@ -80,16 +81,16 @@ function connect() {
 
   ws.onmessage = async (event) => {
     const obj = JSON.parse(event.data);
-    // console.log(obj);
+    log.debug(obj);
     const msg = LanyardWSMsg.parse(obj);
     const { id } = await getDiscordUser();
-    // console.log(msg);
+    log.debug(msg);
     switch (msg.op) {
       case LanyardWSOpcodes.Event: {
         const { d } = msg;
         if (isEmpty(d)) {
           if (!firstWarn)
-            console.log(lanyardWord, "Please join discord.gg/lanyard");
+            log.error(colors.brightRed("Please join discord.gg/lanyard"));
           firstWarn = true;
           lanyardCache = undefined;
         } else if (isData(d)) {
@@ -109,17 +110,17 @@ function connect() {
   };
 
   ws.onopen = () => {
-    console.log(lanyardWord, colors.brightGreen("Connected"));
+    log.info(colors.brightGreen("Connected"));
   };
 
   ws.onclose = async () => {
-    console.log(lanyardWord, colors.brightRed("Disconnected"));
+    log.warn(colors.brightRed("Disconnected"));
     await delay(5000);
     connect();
   };
 
   ws.onerror = async (e) => {
-    console.log(lanyardWord, colors.brightRed("Error"), e);
+    log.error(colors.brightRed("Error"), e);
     ws.onclose = null;
     ws.close();
     await delay(5000);
@@ -137,7 +138,7 @@ async function addID(id: string) {
   }
 
   gotFirstData = false;
-  // console.log("subscribing", connectIDs);
+  log.debug("subscribing", connectIDs);
   ws.send(
     JSON.stringify({
       op: LanyardWSOpcodes.Initalize,

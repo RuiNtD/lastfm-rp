@@ -2,8 +2,9 @@ import { Activity, Client } from "discord_rpc";
 import { clientID } from "./config.ts";
 import { colors } from "cliffy/ansi/colors.ts";
 import { delay } from "std/async/mod.ts";
+import { getLogger } from "./logger.ts";
 
-const discordWord = colors.bold.rgb24("[Discord]", 0x5865f2);
+const log = getLogger(colors.bold.rgb24("[Discord]", 0x5865f2));
 
 export const client = new Client({
   id: clientID,
@@ -22,24 +23,40 @@ export const client = new Client({
 // });
 
 async function plsConnect() {
-  // if (client.isConnected) return;
-  try {
-    await client.connect();
-  } catch (e) {
-    console.error(discordWord, "Failed to reconnect", e);
+  while (true) {
+    try {
+      await client.connect();
+      if (client.user?.discriminator != "0")
+        log.info(
+          colors.bold.green("Ready!"),
+          client.user?.username + colors.gray(`#${client.user?.discriminator}`)
+        );
+      else
+        log.info(
+          colors.bold.green("Ready!"),
+          colors.gray("@") + client.user?.username
+        );
+      return;
+    } catch (e) {
+      log.error("Failed to connect. Retrying in 5 seconds...");
+      log.debug(e);
+
+      await delay(5000);
+    }
   }
 }
 await plsConnect();
-// setInterval(plsConnect, 5000);
-// setInterval(() => {
-//   console.log(client.user);
-// }, 10_000);
 
-console.log(
-  discordWord,
-  colors.bold.green("Ready!"),
-  client.user?.username + colors.gray(`#${client.user?.discriminator}`)
-);
+let retrying = false; // Debounce
+async function checkRetry() {
+  if (retrying) return;
+  retrying = true;
+  log.error("Disconnected!");
+  await plsConnect();
+  retrying = false;
+}
+// Doesn't work :(
+// setInterval(checkRetry, 1_000);
 
 export async function getDiscordUser() {
   while (!client.user) {
