@@ -25,6 +25,7 @@ if (!username) {
 (async () => {
   try {
     await Deno.remove(".kill");
+    // deno-lint-ignore no-empty
   } catch {}
 })();
 
@@ -34,6 +35,7 @@ watcher.on("add", async () => {
   await delay(1000);
   try {
     await Deno.remove(".kill");
+    // deno-lint-ignore no-empty
   } catch {}
   Deno.exit();
 });
@@ -41,7 +43,7 @@ watcher.on("add", async () => {
 setActivity(await activity());
 setInterval(async () => {
   setActivity(await activity());
-}, 5000);
+}, 1000);
 
 /*
 try {
@@ -82,7 +84,7 @@ async function activity(): Promise<Activity | undefined> {
     return;
   }
 
-  status(`Now playing: ${track.name} by ${track.artist["#text"]}`);
+  status(`Now playing: ${track.name} by ${track.artist}`);
 
   const buttons: GatewayActivityButton[] = [
     {
@@ -100,18 +102,18 @@ async function activity(): Promise<Activity | undefined> {
       url: user.url,
     });
     smallImageText += `as ${user.name} `;
-    smallImageKey = user.image[user.image.length - 1]["#text"];
+    smallImageKey = user.image.extralarge;
   }
 
   smallImageText += "on Last.fm";
 
   return {
     details: track.name,
-    state: `by ${track.artist["#text"]}`,
+    state: `by ${track.artist}`,
 
     assets: {
-      large_image: track.image[track.image.length - 1]["#text"],
-      large_text: track.album["#text"],
+      large_image: track.image.extralarge,
+      large_text: track.album,
       small_image: smallImageKey,
       small_text: smallImageText,
     },

@@ -1,54 +1,67 @@
-// @ts-nocheck
-
 import { getLastTrack } from "./lastFm.ts";
-import moment from "moment";
-
-const bgImg = new Image();
-bgImg.src = "../assets/np-background.png";
+import { DateTime } from "luxon";
+import { CanvasRenderingContext2D, Image, Canvas } from "dwm";
+import config from "./config.ts";
+import { encodeBase64 } from "std/encoding/base64.ts";
 
 const debug = false;
 const font = "sans-serif";
 
-async function lastTrack() {
-  const recent = await getLastTrack();
-  if (recent.error) throw `Error from Last.fm: ${recent.message}`;
-  const track = recent.recenttracks.track[0];
-  if (!track) throw "Error: No recently played tracks";
-  return track;
+function getRelTime(uts: number) {
+  // TODO: Figure out how to do this without luxon
+  return DateTime.fromSeconds(uts).toRelative();
 }
 
 export async function genPlayText() {
-  const track = await lastTrack();
+  const track = await getLastTrack();
+  if (!track) throw "Error: No recently played tracks";
   const { nowplaying } = track["@attr"] || {};
   let ret = "🎧 __**";
   if (!nowplaying) ret += "Now Playing**__";
   else {
-    //const { uts } = track.date;
-    //const rel = moment.unix(uts).fromNow();
-    const rel = "59 minutes ago";
+    const uts = track.date?.uts || 0;
+    const rel = getRelTime(uts);
+    // const rel = "59 minutes ago";
     ret += `Recently Played**__ (${rel})`;
   }
-  ret += `\n**${track.name}**\nby ${track.artist["#text"]}`;
+  ret += `\n**${track.name}**\nby ${track.artist}`;
   return ret;
 }
 
-export async function genPlayImage(): Promise<Blob> {
-  const track = await lastTrack();
-  const { nowplaying } = track["@attr"] || {};
-
-  const canvas = document.createElement("canvas");
+const lastImage = "";
+export async function genPlayImage(roundBorder = true): Promise<string> {
+  const canvas: Canvas = new Canvas(350, 100);
   canvas.width = 350;
   canvas.height = 100;
+  await drawToCanvas(canvas.getContext("2d"), roundBorder);
 
-  const ctx = canvas.getContext("2d");
-  // "exploder" is not a typo. just a dumb joke.
-  if (!ctx) throw "bruh wtf are you using internet exploder or smth???";
+  // TypeError: encodeBase64 is not a function
+  // return canvas.toDataURL();
 
-  ctx.drawImage(bgImg, 0, 0);
+  const encoded = encodeBase64(canvas.encode());
+  if (lastImage != encoded) canvas.save("nowPlaying.png");
+  return `./nowPlaying.png`;
+}
+
+const bgImg = new Image();
+bgImg.src = "assets/np-background.png";
+
+const bgImgSq = new Image();
+bgImgSq.src = "assets/np-background-square.png";
+
+export async function drawToCanvas(
+  ctx: CanvasRenderingContext2D,
+  roundBorder = true
+) {
+  const track = await getLastTrack();
+  if (!track) throw "Error: No recently played tracks";
+  const { nowplaying } = track["@attr"] || {};
+
+  ctx.drawImage(roundBorder ? bgImg : bgImgSq, 0, 0);
 
   const albumArt = new Image();
-  albumArt.crossOrigin = "anonymous";
-  albumArt.src = track.image[track.image.length - 1]["#text"];
+  // albumArt.crossOrigin = "anonymous";
+  albumArt.src = track.image.large || "assets/albumPlaceholder.webp";
   await new Promise((resolve) => {
     albumArt.onload = resolve;
   });
@@ -59,7 +72,7 @@ export async function genPlayImage(): Promise<Blob> {
   ctx.drawImage(albumArt, 5, 5, 90, 90);
   ctx.restore();
 
-  // TODO: Add Loved indicator
+  // TODO: Add Loved indicator?
 
   ctx.textAlign = "center";
   ctx.fillStyle = "#404040";
@@ -77,29 +90,23 @@ export async function genPlayImage(): Promise<Blob> {
   ctx.textBaseline = "hanging";
   ctx.fillStyle = "black";
   ctx.font = "12px " + font;
-  text(ctx, "by " + track.artist["#text"], 105, 60, 240);
+  text(ctx, "by " + track.artist, 105, 60, 240);
 
   ctx.fillStyle = "#808080";
   ctx.textBaseline = "alphabetic";
 
   ctx.font = "8px " + font;
   let last_text = nowplaying ? "Scrobbling now " : "Scrobbled ";
-  last_text += store.shareName ? `as ${store.username}` : "on Last.fm";
+  last_text += config.shareName ? `as ${config.username}` : "on Last.fm";
   text(ctx, last_text, 100, 90, 150);
 
   if (!nowplaying) {
-    const { uts } = track.date;
-    const rel = moment.unix(uts).fromNow();
+    const uts = track.date?.uts || 0;
+    const rel = getRelTime(uts);
     ctx.textAlign = "right";
     ctx.font = "10px " + font;
     text(ctx, rel, 340, 90, 80);
   }
-
-  return await new Promise((resolve, reject) => {
-    canvas.toBlob((blob) => {
-      blob ? resolve(blob) : reject();
-    });
-  });
 }
 
 function roundImage(
