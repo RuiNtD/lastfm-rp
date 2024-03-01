@@ -18,14 +18,14 @@ const currentLevel = LogLevel.INFO;
 
 export function getLogger(prefix?: string) {
   return {
-    debug: (...data: any[]) => log(LogLevel.DEBUG, prefix, ...data),
-    info: (...data: any[]) => log(LogLevel.INFO, prefix, ...data),
-    warn: (...data: any[]) => log(LogLevel.WARN, prefix, ...data),
-    error: (...data: any[]) => log(LogLevel.ERROR, prefix, ...data),
+    debug: (...data: unknown[]) => log(LogLevel.DEBUG, prefix, ...data),
+    info: (...data: unknown[]) => log(LogLevel.INFO, prefix, ...data),
+    warn: (...data: unknown[]) => log(LogLevel.WARN, prefix, ...data),
+    error: (...data: unknown[]) => log(LogLevel.ERROR, prefix, ...data),
   };
 }
 
-function log(level: LogLevel, prefix?: string, ...data: any[]) {
+function log(level: LogLevel, prefix?: string, ...data: unknown[]) {
   if (prefix) data.unshift(prefix);
 
   const levelPrefix = levelPrefixes[level];
