@@ -1,0 +1,20 @@
+{
+  "tasks": {
+    "start": "deno run -A --unstable-temporal src/index.ts",
+    "gui": "deno run -A --unstable-temporal src/gui.ts",
+    "dev": "deno run --watch main.ts",
+    "udd": "deno run -r --allow-read=. --allow-write=. --allow-net https://deno.land/x/udd/main.ts deno.jsonc"
+  },
+  "unstable": ["ffi", "temporal", "webgpu"],
+  "imports": {
+    "std/": "https://deno.land/std@0.213.0/",
+    "axios": "npm:axios@1.6.7",
+    "chokidar": "npm:chokidar@3.5.3",
+    "cliffy/": "https://deno.land/x/cliffy@v1.0.0-rc.3/",
+    "discord-api-types/": "https://deno.land/x/discord_api_types@0.37.67/",
+    "discord_rpc": "https://deno.land/x/discord_rpc@0.3.2/mod.ts",
+    "dwm": "https://deno.land/x/dwm@0.3.6/ext/canvas.ts",
+    "luxon": "npm:luxon@3.4.4",
+    "zod": "https://deno.land/x/zod@v3.22.4/mod.ts"
+  }
+}
