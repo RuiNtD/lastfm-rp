@@ -1,6 +1,6 @@
 import * as lastfm from "./lastFm.ts";
 import { Activity } from "discord_rpc";
-import { GatewayActivityButton } from "discord-api-types/v10.ts";
+import { GatewayActivityButton, ActivityType } from "discord-api-types/v10";
 import config from "./config.ts";
 import chokidar from "chokidar";
 import { colors } from "@cliffy/ansi/colors";
@@ -102,6 +102,11 @@ async function activity(): Promise<Activity | undefined> {
   smallImageText += "on Last.fm";
 
   return {
+    // TODO: remove ts-ignore once typing is updated
+    // @ts-ignore new feature
+    // TY ADVAITH <3
+    type: ActivityType.Listening,
+
     details: track.name,
     state: `by ${track.artist}`,
 
