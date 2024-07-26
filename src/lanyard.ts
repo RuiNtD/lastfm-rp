@@ -2,7 +2,6 @@ import { ActivityType } from "discord-api-types/v10";
 import { z } from "zod";
 import { getDiscordUser } from "./discord.ts";
 import { colors } from "@cliffy/ansi/colors";
-import config from "./config.ts";
 import { delay } from "@std/async";
 import { getLogger } from "./logger.ts";
 
@@ -127,7 +126,7 @@ function connect() {
     connect();
   };
 }
-if (config.otherEnabled) connect();
+connect();
 
 async function addID(id: string) {
   if (connectIDs.includes(id)) return;

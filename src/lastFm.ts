@@ -14,8 +14,8 @@ const api = axios.create({
 
 const log = getLogger(colors.bold.rgb24("[Last.fm]", 0xba0000));
 
-const { username } = config;
-const apiKey = config.advanced.lastFmKey || "3b64424cee4803202edd52b060297958";
+const { lastFmUsername: username } = config;
+const apiKey = config.lastFmApiKey || "3b64424cee4803202edd52b060297958";
 
 export const LastFMError = z.object({ error: z.number(), message: z.string() });
 export type LastFMError = z.infer<typeof LastFMError>;

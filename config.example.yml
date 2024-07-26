@@ -1,0 +1,15 @@
+_VERSION: 2 # Do not touch this line!
+lastFmUsername: ""
+shareUsername: false # Adds link to your profile and shows your profile picture
+
+# Disable when another app's Rich Presence is detected
+# Requires joining https://discord.gg/lanyard
+disableOnPresence:
+  any: false
+  listening: true # Spotify
+  cider: true
+  iTunesRP: true
+  PreMiDAppleMusic: true
+  custom: [] # Application IDs
+lastFmApiKey: "" # Optional
+discordClientId: "" # Optional

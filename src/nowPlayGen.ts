@@ -97,7 +97,9 @@ export async function drawToCanvas(
 
   ctx.font = "8px " + font;
   let last_text = nowplaying ? "Scrobbling now " : "Scrobbled ";
-  last_text += config.shareName ? `as ${config.username}` : "on Last.fm";
+  last_text += config.shareUsername
+    ? `as ${config.lastFmUsername}`
+    : "on Last.fm";
   text(ctx, last_text, 100, 90, 150);
 
   if (!nowplaying) {

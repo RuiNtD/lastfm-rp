@@ -1,33 +1,69 @@
 import { z } from "zod";
+import * as YAML from "@std/yaml";
+import ConfigV1 from "./config-migrations/V1.ts";
 
-export const OtherConfig = z.object({
-  any: z.boolean().default(false),
-  listening: z.boolean().default(true),
-  cider: z.boolean().default(true),
-  iTRP: z.boolean().default(true),
-  AMPMD: z.boolean().default(true),
-  custom: z.array(z.string().regex(/^\d*$/).max(20)),
-});
+import Config, { OtherConfig } from "./config-migrations/V2.ts";
+export { Config, OtherConfig };
+export type Config = z.infer<typeof Config>;
 export type OtherConfig = z.infer<typeof OtherConfig>;
 
-const Config = z.object({
-  _VERSION: z.literal(1),
-  username: z
-    .string()
-    .regex(/^[A-Za-z][\w-]+$/)
-    .min(2)
-    .max(15),
-  shareName: z.boolean().default(false),
-  otherEnabled: z.boolean().default(true),
-  other: OtherConfig.optional(),
-  advanced: z.object({
-    lastFmKey: z.string().optional(),
-    appId: z.string().optional(),
-  }),
-});
+export const AnyConfig = z
+  .object({
+    _VERSION: z.number(),
+  })
+  .passthrough();
 
-const file = await Deno.readTextFile("config.json");
-const config = Config.parse(JSON.parse(file));
+try {
+  const json = JSON.parse(await Deno.readTextFile("config.json"));
+  await Deno.writeTextFile(
+    "config.yml",
+    YAML.stringify(json, { skipInvalid: true }),
+    { createNew: true }
+  );
+  await Deno.rename("config.json", "config.json.bak");
+  console.log("Converted config.json to config.yml");
+  console.log("Old config backed up to config.json.bak");
+} catch {
+  //
+}
 
-export const clientID = config.advanced.appId || "740140397162135563";
+let file: string;
+try {
+  file = await Deno.readTextFile("config.yml");
+} catch {
+  console.error(
+    "Config not found. Please create config.yml, using config.example.yml as reference."
+  );
+  Deno.exit();
+}
+
+let config: Config;
+try {
+  let conf = AnyConfig.parse(YAML.parse(file));
+  const oldVersion = conf._VERSION;
+  conf = migrate(conf, ConfigV1);
+  config = Config.parse(conf);
+  if (oldVersion != config._VERSION) {
+    await Deno.writeTextFile(
+      "config.yml",
+      YAML.stringify(config, { skipInvalid: true })
+    );
+    await Deno.writeTextFile("config.yml.bak", file);
+    console.log(`Migrated config.yml to version ${config._VERSION}`);
+    console.log(`Old config (V${oldVersion}) backed up to config.yml.bak`);
+  }
+} catch (e) {
+  console.error("Error parsing config.yml", e);
+  Deno.exit();
+}
+
+export const clientID = config.discordClientId || "740140397162135563";
 export default config;
+
+function migrate<T extends z.ZodTypeAny, C>(
+  config: C,
+  schema: T
+): z.output<typeof schema> | C {
+  const out = schema.safeParse(config);
+  return out.success ? out.data : config;
+}

@@ -1,6 +1,8 @@
-node_modules
-config.json
 WebView2Loader.dll
 .kill
-dist
+
+config.json
+config.json.bak
+config.yml
+config.yml.bak
 nowPlaying.png

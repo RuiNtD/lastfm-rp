@@ -16,12 +16,6 @@ let lastStatus = {
   date: new Date(),
 };
 
-const { username } = config;
-if (!username) {
-  log.error(colors.red("Please run editconfig to create the config"));
-  Deno.exit(1);
-}
-
 (async () => {
   try {
     await Deno.remove(".kill");
@@ -96,7 +90,7 @@ async function activity(): Promise<Activity | undefined> {
   let smallImageText = "Scrobbling now ";
 
   const user = await lastfm.getUser();
-  if (config.shareName && user) {
+  if (config.shareUsername && user) {
     buttons.push({
       label: "Last.fm Profile",
       url: user.url,

@@ -16,6 +16,7 @@
       "jsr:@std/fs@^0.221.0": "jsr:@std/fs@0.221.0",
       "jsr:@std/path@^0.221.0": "jsr:@std/path@0.221.0",
       "jsr:@std/path@^1.0.2": "jsr:@std/path@1.0.2",
+      "jsr:@std/yaml@^1.0.0": "jsr:@std/yaml@1.0.0",
       "jsr:@webview/webview@^0.8.0": "jsr:@webview/webview@0.8.0",
       "npm:@json-editor/json-editor": "npm:@json-editor/json-editor@2.13.2",
       "npm:@json-editor/json-editor@^2.14.1": "npm:@json-editor/json-editor@2.15.1",
@@ -98,6 +99,9 @@
       },
       "@std/path@1.0.2": {
         "integrity": "a452174603f8c620bd278a380c596437a9eef50c891c64b85812f735245d9ec7"
+      },
+      "@std/yaml@1.0.0": {
+        "integrity": "06635c312121ee779e9eef4e9f49c1a26003b15da9ed1178037ccb91dc3a5129"
       },
       "@webview/webview@0.8.0": {
         "integrity": "5fc571eac35026e8b5efd2bb6f483c2b4e3925e2244e9a9a66b0bc90bdef4983",
@@ -1046,6 +1050,7 @@
       "jsr:@ruintd/configedit@^1.0.7",
       "jsr:@std/async@^1.0.1",
       "jsr:@std/encoding@^1.0.1",
+      "jsr:@std/yaml@^1.0.0",
       "npm:axios@^1.7.2",
       "npm:chokidar@^3.6.0",
       "npm:discord-api-types@^0.37.93",

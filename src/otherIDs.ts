@@ -7,13 +7,13 @@ const OtherAppIDs: { [appName in OtherKey]: string[] } = {
     "911790844204437504", // Cider
     "886578863147192350", // Apple Music
   ],
-  iTRP: [
+  iTunesRP: [
     // iTunes Rich Presence
     // https://itunesrichpresence.com/
     "383816327850360843", // iTunes
     "529435150472183819", // Apple Music
   ],
-  AMPMD: ["842112189618978897"], // Apple Music PreMiD
+  PreMiDAppleMusic: ["842112189618978897"], // Apple Music PreMiD
 };
 
 async function getUserActivities(): Promise<LanyardActivity[]> {
@@ -23,20 +23,21 @@ async function getUserActivities(): Promise<LanyardActivity[]> {
 
 function getBlockedIDs(): string[] {
   let ids: string[] = [];
-  if (!config.other) return [];
+  if (!config.disableOnPresence) return [];
   for (const appName of Object.keys(OtherAppIDs) as OtherKey[]) {
-    if (config.other[appName]) ids = ids.concat(OtherAppIDs[appName]);
+    if (config.disableOnPresence[appName])
+      ids = ids.concat(OtherAppIDs[appName]);
   }
   return ids;
 }
 
 export async function hasOtherActivity(): Promise<LanyardActivity | undefined> {
-  if (!config.otherEnabled || !config.other) return;
+  if (!config.disableOnPresence) return;
   const activities = (await getUserActivities()).filter(
     (v) => v.application_id != clientID && v.id != "custom"
   );
 
-  if (config.other.any) {
+  if (config.disableOnPresence.any) {
     const act = activities.at(0);
     return act;
   }
@@ -44,7 +45,8 @@ export async function hasOtherActivity(): Promise<LanyardActivity | undefined> {
   const blockedIDs = getBlockedIDs();
   return activities.find(
     (v) =>
-      (config.other?.listening && v.type == ActivityType.Listening) ||
+      (config.disableOnPresence?.listening &&
+        v.type == ActivityType.Listening) ||
       (v.application_id && blockedIDs.includes(v.application_id))
   );
 }
