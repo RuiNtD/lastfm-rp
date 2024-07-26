@@ -1,5 +1,5 @@
 import config from "./config.ts";
-import { colors } from "cliffy/ansi/colors.ts";
+import { colors } from "@cliffy/ansi/colors";
 import { getLogger } from "./logger.ts";
 import { z } from "zod";
 import axios from "axios";

@@ -1,9 +1,9 @@
-import { ActivityType } from "discord-api-types/v10.ts";
+import { ActivityType } from "discord-api-types/v10";
 import { z } from "zod";
 import { getDiscordUser } from "./discord.ts";
-import { colors } from "cliffy/ansi/colors.ts";
+import { colors } from "@cliffy/ansi/colors";
 import config from "./config.ts";
-import { delay } from "std/async/mod.ts";
+import { delay } from "@std/async";
 import { getLogger } from "./logger.ts";
 
 const log = getLogger(colors.bold.rgb24("[Lanyard]", 0xd7bb87));

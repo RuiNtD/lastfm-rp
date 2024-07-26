@@ -1,6 +1,6 @@
 #!/usr/bin/env -S deno run -A
 
-import configedit from "https://deno.land/x/configedit@1.0.4/mod.ts";
+import configedit from "@ruintd/configedit";
 configedit({
   configPath: "config.json",
   schemaPath: "src/schema.json",

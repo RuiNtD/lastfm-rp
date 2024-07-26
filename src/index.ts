@@ -3,9 +3,9 @@ import { Activity } from "discord_rpc";
 import { GatewayActivityButton } from "discord-api-types/v10.ts";
 import config from "./config.ts";
 import chokidar from "chokidar";
-import { colors } from "cliffy/ansi/colors.ts";
+import { colors } from "@cliffy/ansi/colors";
 import { hasOtherActivity } from "./otherIDs.ts";
-import { delay } from "std/async/mod.ts";
+import { delay } from "@std/async";
 import { setActivity } from "./discord.ts";
 import { getLogger } from "./logger.ts";
 

@@ -2,7 +2,7 @@ import { getLastTrack } from "./lastFm.ts";
 import { DateTime } from "luxon";
 import { CanvasRenderingContext2D, Image, Canvas } from "dwm";
 import config from "./config.ts";
-import { encodeBase64 } from "std/encoding/base64.ts";
+import { encodeBase64 } from "@std/encoding";
 
 const debug = false;
 const font = "sans-serif";

@@ -1,7 +1,7 @@
 import { Activity, Client } from "discord_rpc";
 import { clientID } from "./config.ts";
-import { colors } from "cliffy/ansi/colors.ts";
-import { delay } from "std/async/mod.ts";
+import { colors } from "@cliffy/ansi/colors";
+import { delay } from "@std/async";
 import { getLogger } from "./logger.ts";
 
 const log = getLogger(colors.bold.rgb24("[Discord]", 0x5865f2));

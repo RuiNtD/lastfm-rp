@@ -70,54 +70,31 @@
           "title": "Spotify",
           "type": "boolean",
           "format": "checkbox",
-          "default": true,
-          "options": {
-            "dependencies": {
-              "any": false
-            }
-          }
+          "default": true
         },
         "cider": {
           "title": "Cider",
           "type": "boolean",
           "format": "checkbox",
-          "default": true,
-          "options": {
-            "dependencies": {
-              "any": false
-            }
-          }
+          "default": true
         },
         "iTRP": {
           "title": "iTunes Rich Presence",
           "type": "boolean",
           "format": "checkbox",
-          "default": true,
-          "options": {
-            "dependencies": {
-              "any": false
-            }
-          }
+          "default": true
         },
         "AMPMD": {
           "title": "Apple Music PreMiD",
           "type": "boolean",
           "format": "checkbox",
-          "default": true,
-          "options": {
-            "dependencies": {
-              "any": false
-            }
-          }
+          "default": true
         },
         "custom": {
           "title": "Custom Application IDs",
           "type": "array",
           "options": {
-            "collapsed": true,
-            "dependencies": {
-              "any": false
-            }
+            "collapsed": true
           },
           "items": {
             "type": "string",
