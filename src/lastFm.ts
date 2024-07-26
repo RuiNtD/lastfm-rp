@@ -3,7 +3,7 @@ import { colors } from "@cliffy/ansi/colors";
 import { getLogger } from "./logger.ts";
 import { z } from "zod";
 import axios from "axios";
-import CacheVar from "./cache.ts";
+import memoize from "memoize";
 
 const api = axios.create({
   baseURL: "https://ws.audioscrobbler.com/2.0/",
@@ -103,12 +103,8 @@ async function sendRequest(params: Record<string, string>): Promise<unknown> {
   return data;
 }
 
-const lastTrack = new CacheVar<LastFMTrack>({ seconds: 5 });
-export async function getLastTrack(): Promise<LastFMTrack | undefined> {
+async function _getLastTrack(): Promise<LastFMTrack | undefined> {
   try {
-    const cached = lastTrack.get();
-    if (cached) return cached;
-
     const data = await sendRequest({
       method: "user.getrecenttracks",
       user: username,
@@ -118,13 +114,13 @@ export async function getLastTrack(): Promise<LastFMTrack | undefined> {
     const tracks = LastFMTracks.parse(data);
     const track: LastFMTrack = tracks.recenttracks.track[0];
     log.debug(track);
-    lastTrack.set(track);
     return track;
   } catch (e) {
     log.error(colors.red("Error"), e);
     return;
   }
 }
+export const getLastTrack = memoize(_getLastTrack, { maxAge: 5_000 });
 
 const LastFMUser = z.object({
   name: z.string(),
@@ -137,22 +133,16 @@ const LastFMUser = z.object({
 export type LastFMUser = z.infer<typeof LastFMUser>;
 const LastAPIUser = z.object({ user: LastFMUser });
 
-const cachedUser = new CacheVar<LastFMUser>({ minutes: 5 });
-export async function getUser(): Promise<LastFMUser | undefined> {
+async function _getUser(): Promise<LastFMUser | undefined> {
   try {
-    const cached = cachedUser.get();
-    if (cached) return cached;
-
     const data = await sendRequest({
       method: "user.getinfo",
       user: username,
     });
-
-    const { user } = LastAPIUser.parse(data);
-    cachedUser.set(user);
-    return user;
+    return LastAPIUser.parse(data).user;
   } catch (e) {
     log.error(colors.red("Error"), e);
     return;
   }
 }
+export const getUser = memoize(_getUser, { maxAge: 5 * 60_000 });
