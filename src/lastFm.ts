@@ -2,7 +2,7 @@ import config from "./config.ts";
 import { colors } from "@cliffy/ansi/colors";
 import { getLogger } from "./logger.ts";
 import { z } from "zod";
-import axios from "axios";
+import axios, { AxiosError } from "axios";
 import memoize from "memoize";
 
 const api = axios.create({
@@ -116,7 +116,8 @@ async function _getLastTrack(): Promise<LastFMTrack | undefined> {
     log.debug(track);
     return track;
   } catch (e) {
-    log.error(colors.red("Error"), e);
+    if (e instanceof AxiosError) log.error(colors.red("Error"), e.message);
+    else log.error(colors.red("Error"), e);
     return;
   }
 }
@@ -141,7 +142,8 @@ async function _getUser(): Promise<LastFMUser | undefined> {
     });
     return LastAPIUser.parse(data).user;
   } catch (e) {
-    log.error(colors.red("Error"), e);
+    if (e instanceof AxiosError) log.error(colors.red("Error"), e.message);
+    else log.error(colors.red("Error"), e);
     return;
   }
 }
