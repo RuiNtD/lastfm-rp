@@ -1,4 +1,4 @@
-import config from "./config.ts";
+import config, { lastFmApiKey } from "./config.ts";
 import chalk from "chalk";
 import { getLogger } from "./logger.ts";
 import { z } from "zod";
@@ -12,10 +12,10 @@ const api = axios.create({
   },
 });
 
-const log = getLogger(chalk.bold.hex("#ba0000")("[Last.fm]"));
+const log = getLogger(chalk.hex("#ba0000")("Last.fm"));
 
 const { lastFmUsername: username } = config;
-const apiKey = config.lastFmApiKey || "3b64424cee4803202edd52b060297958";
+const apiKey = lastFmApiKey;
 
 export const LastFMError = z.object({ error: z.number(), message: z.string() });
 export type LastFMError = z.infer<typeof LastFMError>;

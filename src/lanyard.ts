@@ -4,7 +4,7 @@ import { getDiscordUser } from "./discord.ts";
 import chalk from "chalk";
 import { getLogger } from "./logger.ts";
 
-const log = getLogger(chalk.bold.hex("#d7bb87")("[Lanyard]"));
+const log = getLogger(chalk.hex("#d7bb87")("Lanyard"));
 
 export { ActivityType };
 

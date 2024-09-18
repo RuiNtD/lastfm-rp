@@ -1,6 +1,18 @@
 _VERSION: 2 # Do not touch this line!
 lastFmUsername: ""
-shareUsername: false # Adds link to your profile and shows your profile picture
+
+smallImage: profile # What to show on the small image
+# lastfm: "Scrobbling now on Last.fm" with Last.fm logo
+# profile: "Scrobbling as X on Last.fm" with profile picture
+# none: No small image
+
+# Buttons to show on the Rich Presence
+button1: song
+button2: profile
+# song: "View Song"
+# profile: "Last.fm Profile"
+# github: "Last.fm Rich Presence"
+# none: No button
 
 # Disable when another app's Rich Presence is detected
 # Requires joining https://discord.gg/lanyard
@@ -11,5 +23,6 @@ disableOnPresence:
   iTunesRP: true
   PreMiDAppleMusic: true
   custom: [] # Application IDs
-lastFmApiKey: "" # Optional
-discordClientId: "" # Optional
+
+# lastFmApiKey: ""
+# discordClientId: ""

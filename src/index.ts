@@ -4,13 +4,14 @@ import {
   type GatewayActivityButton,
   ActivityType,
 } from "discord-api-types/v10";
-import config from "./config.ts";
+import config, { ButtonType } from "./config.ts";
 import chokidar from "chokidar";
 import chalk from "chalk";
 import { hasOtherActivity } from "./otherIDs.ts";
 import { setActivity } from "./discord.ts";
 import { getLogger } from "./logger.ts";
 import * as fs from "fs/promises";
+import { isTruthy } from "./helper.ts";
 
 const log = getLogger();
 
@@ -72,29 +73,25 @@ async function activity(): Promise<SetActivity | undefined> {
     status("Nothing playing");
     return;
   }
-
   status(`Now playing: ${track.name} by ${track.artist}`);
 
-  const buttons: GatewayActivityButton[] = [
-    {
-      label: "View Song",
-      url: track.url,
-    },
-  ];
-  let smallImageKey = "lastfm";
-  let smallImageText = "Scrobbling now ";
+  let smallImageKey: string | undefined;
+  let smallImageText: string | undefined;
 
-  const user = await lastfm.getUser();
-  if (config.shareUsername && user) {
-    buttons.push({
-      label: "Last.fm Profile",
-      url: user.url,
-    });
-    smallImageText += `as ${user.name} `;
-    smallImageKey = user.image.extralarge;
+  switch (config.smallImage) {
+    // @ts-ignore Intentional fallthrough
+    case "profile":
+      const user = await lastfm.getUser();
+      if (user) {
+        smallImageKey = user?.image.extralarge;
+        smallImageText = `Scrobbling as ${user?.name} on Last.fm`;
+        break;
+      }
+    case "lastfm":
+      smallImageKey = "lastfm";
+      smallImageText = "Scrobbling now on Last.fm";
+      break;
   }
-
-  smallImageText += "on Last.fm";
 
   return {
     // TY ADVAITH <3
@@ -110,6 +107,37 @@ async function activity(): Promise<SetActivity | undefined> {
 
     startTimestamp: lastStatus.date,
 
-    buttons,
+    buttons: [
+      await getButton(config.button1),
+      await getButton(config.button2),
+    ].filter(isTruthy),
   };
+}
+
+async function getButton(
+  type: ButtonType
+): Promise<GatewayActivityButton | undefined> {
+  switch (type) {
+    case "song":
+      const track = await lastfm.getLastTrack();
+      return (
+        track && {
+          label: "View Song",
+          url: track.url,
+        }
+      );
+    case "profile":
+      const user = await lastfm.getUser();
+      return (
+        user && {
+          label: "Last.fm Profile",
+          url: user.url,
+        }
+      );
+    case "github":
+      return {
+        label: "Last.fm Rich Presence",
+        url: "https://github.com/RuiNtD/lastfm-rp",
+      };
+  }
 }

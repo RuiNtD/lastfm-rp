@@ -3,7 +3,7 @@ import { clientID } from "./config.ts";
 import chalk from "chalk";
 import { getLogger } from "./logger.ts";
 
-const log = getLogger(chalk.hex("#5865f2").bold("[Discord]"));
+const log = getLogger(chalk.hex("#5865f2")("Discord"));
 
 export const client = new Client({
   clientId: clientID,
