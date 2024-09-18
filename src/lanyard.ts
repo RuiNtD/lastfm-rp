@@ -1,11 +1,10 @@
 import { ActivityType } from "discord-api-types/v10";
 import { z } from "zod";
 import { getDiscordUser } from "./discord.ts";
-import { colors } from "@cliffy/ansi/colors";
-import { delay } from "@std/async";
+import chalk from "chalk";
 import { getLogger } from "./logger.ts";
 
-const log = getLogger(colors.bold.rgb24("[Lanyard]", 0xd7bb87));
+const log = getLogger(chalk.bold.hex("#d7bb87")("[Lanyard]"));
 
 export { ActivityType };
 
@@ -89,7 +88,7 @@ function connect() {
         const { d } = msg;
         if (isEmpty(d)) {
           if (!firstWarn)
-            log.error(colors.brightRed("Please join discord.gg/lanyard"));
+            log.error(chalk.redBright("Please join discord.gg/lanyard"));
           firstWarn = true;
           lanyardCache = undefined;
         } else if (isData(d)) {
@@ -109,20 +108,20 @@ function connect() {
   };
 
   ws.onopen = () => {
-    log.info(colors.brightGreen("Connected"));
+    log.info(chalk.greenBright("Connected"));
   };
 
   ws.onclose = async () => {
-    log.warn(colors.brightRed("Disconnected"));
-    await delay(5000);
+    log.warn(chalk.redBright("Disconnected"));
+    await Bun.sleep(5000);
     connect();
   };
 
   ws.onerror = async (e) => {
-    log.error(colors.brightRed("Error"), e);
+    log.error(chalk.redBright("Error"), e);
     ws.onclose = null;
     ws.close();
-    await delay(5000);
+    await Bun.sleep(5000);
     connect();
   };
 }
@@ -133,7 +132,7 @@ async function addID(id: string) {
   connectIDs.push(id);
 
   while (ws.readyState != WebSocket.OPEN) {
-    await delay(0);
+    await Bun.sleep(0);
   }
 
   gotFirstData = false;
@@ -148,7 +147,7 @@ async function addID(id: string) {
 
 export async function getLanyard() {
   while (!gotFirstData) {
-    await delay(0);
+    await Bun.sleep(0);
   }
 
   const { id } = await getDiscordUser();

@@ -4,7 +4,7 @@ Show your Last.fm Now Playing on your Discord profile
 
 ## Requirements
 
-- [Deno]
+- [Bun]
 
 ## Configuration
 
@@ -20,6 +20,6 @@ An option to run Last.fm RP at startup is coming Soon™️ Maybe™️
 
 Run `start` to start Last.fm Rich Presence.
 
-[deno]: https://deno.land/
+[bun]: https://bun.sh/
 [lanyard]: https://github.com/Phineas/lanyard
 [lanyard discord]: https://discord.gg/lanyard

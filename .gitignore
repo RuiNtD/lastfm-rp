@@ -1,4 +1,4 @@
-WebView2Loader.dll
+node_modules
 .kill
 
 config.json

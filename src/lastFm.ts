@@ -1,5 +1,5 @@
 import config from "./config.ts";
-import { colors } from "@cliffy/ansi/colors";
+import chalk from "chalk";
 import { getLogger } from "./logger.ts";
 import { z } from "zod";
 import axios, { AxiosError } from "axios";
@@ -12,7 +12,7 @@ const api = axios.create({
   },
 });
 
-const log = getLogger(colors.bold.rgb24("[Last.fm]", 0xba0000));
+const log = getLogger(chalk.bold.hex("#ba0000")("[Last.fm]"));
 
 const { lastFmUsername: username } = config;
 const apiKey = config.lastFmApiKey || "3b64424cee4803202edd52b060297958";
@@ -116,8 +116,8 @@ async function _getLastTrack(): Promise<LastFMTrack | undefined> {
     log.debug(track);
     return track;
   } catch (e) {
-    if (e instanceof AxiosError) log.error(colors.red("Error"), e.message);
-    else log.error(colors.red("Error"), e);
+    if (e instanceof AxiosError) log.error(chalk.red("Error"), e.message);
+    else log.error(chalk.red("Error"), e);
     return;
   }
 }
@@ -142,8 +142,8 @@ async function _getUser(): Promise<LastFMUser | undefined> {
     });
     return LastAPIUser.parse(data).user;
   } catch (e) {
-    if (e instanceof AxiosError) log.error(colors.red("Error"), e.message);
-    else log.error(colors.red("Error"), e);
+    if (e instanceof AxiosError) log.error(chalk.red("Error"), e.message);
+    else log.error(chalk.red("Error"), e);
     return;
   }
 }

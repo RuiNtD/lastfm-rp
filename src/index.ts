@@ -1,13 +1,16 @@
 import * as lastfm from "./lastFm.ts";
-import { Activity } from "discord_rpc";
-import { GatewayActivityButton, ActivityType } from "discord-api-types/v10";
+import { type SetActivity } from "@xhayper/discord-rpc";
+import {
+  type GatewayActivityButton,
+  ActivityType,
+} from "discord-api-types/v10";
 import config from "./config.ts";
 import chokidar from "chokidar";
-import { colors } from "@cliffy/ansi/colors";
+import chalk from "chalk";
 import { hasOtherActivity } from "./otherIDs.ts";
-import { delay } from "@std/async";
 import { setActivity } from "./discord.ts";
 import { getLogger } from "./logger.ts";
+import * as fs from "fs/promises";
 
 const log = getLogger();
 
@@ -16,22 +19,14 @@ let lastStatus = {
   date: new Date(),
 };
 
-(async () => {
-  try {
-    await Deno.remove(".kill");
-    // deno-lint-ignore no-empty
-  } catch {}
-})();
+await fs.rm(".kill", { force: true });
 
-const watcher = chokidar.watch(".kill");
+const watcher = chokidar.watch(".kill", {});
 watcher.on("add", async () => {
-  log.info(colors.red(`Found .kill file. ${colors.bold("Exiting...")}`));
-  await delay(1000);
-  try {
-    await Deno.remove(".kill");
-    // deno-lint-ignore no-empty
-  } catch {}
-  Deno.exit();
+  log.info(chalk.red(`Found .kill file. ${chalk.bold("Exiting...")}`));
+  await Bun.sleep(1000);
+  await fs.rm(".kill", { force: true });
+  process.exit();
 });
 
 setActivity(await activity());
@@ -65,7 +60,7 @@ export function status(status = "") {
   }
 }
 
-async function activity(): Promise<Activity | undefined> {
+async function activity(): Promise<SetActivity | undefined> {
   const otherAct = await hasOtherActivity();
   if (otherAct) {
     status(`Detected another player: ${otherAct.name}`);
@@ -102,24 +97,18 @@ async function activity(): Promise<Activity | undefined> {
   smallImageText += "on Last.fm";
 
   return {
-    // TODO: remove ts-ignore once typing is updated
-    // @ts-ignore new feature
     // TY ADVAITH <3
     type: ActivityType.Listening,
 
     details: track.name,
     state: `by ${track.artist}`,
 
-    assets: {
-      large_image: track.image.extralarge,
-      large_text: track.album,
-      small_image: smallImageKey,
-      small_text: smallImageText,
-    },
+    largeImageKey: track.image.extralarge,
+    largeImageText: track.album,
+    smallImageKey,
+    smallImageText,
 
-    timestamps: {
-      start: lastStatus.date.getTime(),
-    },
+    startTimestamp: lastStatus.date,
 
     buttons,
   };

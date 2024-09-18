@@ -1,6 +1,7 @@
-import { colors } from "@cliffy/ansi/colors";
+import chalk from "chalk";
 
 enum LogLevel {
+  TRACE,
   DEBUG,
   INFO,
   WARN,
@@ -8,16 +9,23 @@ enum LogLevel {
 }
 
 const levelPrefixes: Record<LogLevel, string> = {
-  [LogLevel.DEBUG]: colors.gray("DEBUG"),
+  [LogLevel.TRACE]: chalk.gray("TRACE"),
+  [LogLevel.DEBUG]: chalk.gray("DEBUG"),
   [LogLevel.INFO]: "",
-  [LogLevel.WARN]: colors.brightYellow("WARN"),
-  [LogLevel.ERROR]: colors.brightRed("ERROR"),
+  [LogLevel.WARN]: chalk.yellowBright("WARN"),
+  [LogLevel.ERROR]: chalk.redBright("ERROR"),
 };
 
 const currentLevel = LogLevel.INFO;
 
-export function getLogger(prefix?: string) {
+type Logger = Record<
+  Lowercase<keyof typeof LogLevel>,
+  (...data: unknown[]) => void
+>;
+
+export function getLogger(prefix?: string): Logger {
   return {
+    trace: (...data: unknown[]) => log(LogLevel.DEBUG, prefix, ...data),
     debug: (...data: unknown[]) => log(LogLevel.DEBUG, prefix, ...data),
     info: (...data: unknown[]) => log(LogLevel.INFO, prefix, ...data),
     warn: (...data: unknown[]) => log(LogLevel.WARN, prefix, ...data),
