@@ -19,10 +19,7 @@ button2: profile
 # Requires joining https://discord.gg/lanyard
 disableOnPresence:
   any: false
-  listening: true # Spotify
-  cider: true
-  iTunesRP: true
-  PreMiDAppleMusic: true
+  listening: true
   custom: [] # Application IDs
 
 # lastFmApiKey: ""
