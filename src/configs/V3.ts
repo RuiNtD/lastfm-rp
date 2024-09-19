@@ -7,7 +7,7 @@ export const OtherConfig = object({
 });
 
 export const ButtonType = z
-  .enum(["song", "profile", "github", "none"])
+  .enum(["song", "artist", "profile", "github", "none"])
   .default("none");
 export type ButtonType = z.infer<typeof ButtonType>;
 

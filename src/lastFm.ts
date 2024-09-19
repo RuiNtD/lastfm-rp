@@ -1,7 +1,7 @@
 import config, { lastFmApiKey } from "./config.ts";
 import chalk from "chalk";
 import { getLogger } from "./logger.ts";
-import { z } from "zod";
+import z, { object, tuple } from "zod";
 import axios, { AxiosError } from "axios";
 import memoize from "memoize";
 
@@ -20,46 +20,38 @@ const apiKey = lastFmApiKey;
 export const LastFMError = z.object({ error: z.number(), message: z.string() });
 export type LastFMError = z.infer<typeof LastFMError>;
 
-const images = z
-  .tuple([
-    z.object({
-      size: z.literal("small"),
-      "#text": z.literal("").or(z.string().url()),
-    }),
-    z.object({
-      size: z.literal("medium"),
-      "#text": z.literal("").or(z.string().url()),
-    }),
-    z.object({
-      size: z.literal("large"),
-      "#text": z.literal("").or(z.string().url()),
-    }),
-    z.object({
-      size: z.literal("extralarge"),
-      "#text": z.literal("").or(z.string().url()),
-    }),
-  ])
-  .transform((v) => {
-    return {
-      small: v[0]["#text"],
-      medium: v[1]["#text"],
-      large: v[2]["#text"],
-      extralarge: v[3]["#text"],
-    };
-  });
+const hashtext = object({
+  "#text": z.string(),
+}).transform((v) => v["#text"]);
 
-export const LastFMTrack = z.object({
-  artist: z
-    .object({
-      "#text": z.string(),
-    })
-    .transform((v) => v["#text"]),
+const images = tuple([
+  z.object({
+    size: z.literal("small"),
+    "#text": z.literal("").or(z.string().url()),
+  }),
+  z.object({
+    size: z.literal("medium"),
+    "#text": z.literal("").or(z.string().url()),
+  }),
+  z.object({
+    size: z.literal("large"),
+    "#text": z.literal("").or(z.string().url()),
+  }),
+  z.object({
+    size: z.literal("extralarge"),
+    "#text": z.literal("").or(z.string().url()),
+  }),
+]).transform((v) => ({
+  small: v[0]["#text"],
+  medium: v[1]["#text"],
+  large: v[2]["#text"],
+  extralarge: v[3]["#text"],
+}));
+
+export const LastFMTrack = object({
+  artist: hashtext,
   image: images,
-  album: z
-    .object({
-      "#text": z.string(),
-    })
-    .transform((v) => v["#text"]),
+  album: hashtext,
   name: z.string(),
   "@attr": z
     .object({
@@ -148,3 +140,26 @@ async function _getUser(): Promise<LastFMUser | undefined> {
   }
 }
 export const getUser = memoize(_getUser, { maxAge: 5 * 60_000 });
+
+const LastFMArtist = z.object({
+  name: z.string(),
+  url: z.string().url(),
+  image: images,
+});
+export type LastFMArtist = z.infer<typeof LastFMArtist>;
+const LastAPIArtist = z.object({ artist: LastFMArtist });
+
+async function _getArtist(artist: string): Promise<LastFMArtist | undefined> {
+  try {
+    const data = await sendRequest({
+      method: "artist.getinfo",
+      artist,
+    });
+    return LastAPIArtist.parse(data).artist;
+  } catch (e) {
+    if (e instanceof AxiosError) log.error(chalk.red("Error"), e.message);
+    else log.error(chalk.red("Error"), e);
+    return;
+  }
+}
+export const getArtist = memoize(_getArtist, { maxAge: 20 * 60_000 });

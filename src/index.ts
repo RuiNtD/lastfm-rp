@@ -80,17 +80,19 @@ async function activity(): Promise<SetActivity | undefined> {
 
   switch (config.smallImage) {
     // @ts-ignore Intentional fallthrough
-    case "profile":
+    case "profile": {
       const user = await lastfm.getUser();
       if (user) {
-        smallImageKey = user?.image.extralarge;
-        smallImageText = `Scrobbling as ${user?.name} on Last.fm`;
+        smallImageKey = user.image.extralarge;
+        smallImageText = `Scrobbling as ${user.name} on Last.fm`;
         break;
       }
-    case "lastfm":
+    } // fallthrough
+    case "lastfm": {
       smallImageKey = "lastfm";
       smallImageText = "Scrobbling now on Last.fm";
       break;
+    }
   }
 
   return {
@@ -118,22 +120,32 @@ async function getButton(
   type: ButtonType
 ): Promise<GatewayActivityButton | undefined> {
   switch (type) {
-    case "song":
+    case "song": {
       const track = await lastfm.getLastTrack();
-      return (
-        track && {
-          label: "View Song",
-          url: track.url,
-        }
-      );
-    case "profile":
+      if (!track) return;
+      return {
+        label: "View Song",
+        url: track.url,
+      };
+    }
+    case "artist": {
+      const track = await lastfm.getLastTrack();
+      if (!track) return;
+      const artist = await lastfm.getArtist(track.artist);
+      if (!artist) return;
+      return {
+        label: "View Artist",
+        url: artist.url,
+      };
+    }
+    case "profile": {
       const user = await lastfm.getUser();
-      return (
-        user && {
-          label: "Last.fm Profile",
-          url: user.url,
-        }
-      );
+      if (!user) return;
+      return {
+        label: "Last.fm Profile",
+        url: user.url,
+      };
+    }
     case "github":
       return {
         label: "Last.fm Rich Presence",

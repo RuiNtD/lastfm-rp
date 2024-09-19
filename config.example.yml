@@ -10,6 +10,7 @@ smallImage: profile # What to show on the small image
 button1: song
 button2: profile
 # song: "View Song"
+# artist: "View Artist"
 # profile: "Last.fm Profile"
 # github: "Last.fm Rich Presence"
 # none: No button
