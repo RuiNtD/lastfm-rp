@@ -25,19 +25,29 @@ type Logger = Record<
 
 export function getLogger(prefix?: string): Logger {
   return {
-    trace: (...data: unknown[]) => log(LogLevel.TRACE, prefix, ...data),
-    debug: (...data: unknown[]) => log(LogLevel.DEBUG, prefix, ...data),
-    info: (...data: unknown[]) => log(LogLevel.INFO, prefix, ...data),
-    warn: (...data: unknown[]) => log(LogLevel.WARN, prefix, ...data),
-    error: (...data: unknown[]) => log(LogLevel.ERROR, prefix, ...data),
+    trace: (...data: unknown[]) =>
+      log(LogLevel.TRACE, console.trace, prefix, ...data),
+    debug: (...data: unknown[]) =>
+      log(LogLevel.DEBUG, console.debug, prefix, ...data),
+    info: (...data: unknown[]) =>
+      log(LogLevel.INFO, console.info, prefix, ...data),
+    warn: (...data: unknown[]) =>
+      log(LogLevel.WARN, console.warn, prefix, ...data),
+    error: (...data: unknown[]) =>
+      log(LogLevel.ERROR, console.error, prefix, ...data),
   };
 }
 
-function log(level: LogLevel, prefix?: string, ...data: unknown[]) {
+function log(
+  level: LogLevel,
+  fn: (...data: unknown[]) => void = console.log,
+  prefix?: string,
+  ...data: unknown[]
+) {
   if (prefix) data.unshift(chalk.bold(`[${prefix}]`));
 
   const levelPrefix = levelPrefixes[level];
   if (levelPrefix) data.unshift(chalk.bold(levelPrefix));
 
-  if (level >= currentLevel) console.log(...data);
+  if (level >= currentLevel) fn(...data);
 }

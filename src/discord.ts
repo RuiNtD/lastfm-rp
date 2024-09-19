@@ -1,5 +1,5 @@
 import { type SetActivity, Client } from "@xhayper/discord-rpc";
-import { clientID } from "./config.ts";
+import { clientID } from "./config/index.ts";
 import chalk from "chalk";
 import { getLogger } from "./logger.ts";
 

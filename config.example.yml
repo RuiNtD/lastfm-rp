@@ -1,17 +1,18 @@
-_VERSION: 3 # Do not touch this line!
-lastFmUsername: ""
+_VERSION: 4 # Do not touch this line!
+
+provider: lastfm # lastfm, listenbrainz
+username: ""
 
 smallImage: profile # What to show on the small image
-# lastfm: "Scrobbling now on Last.fm" with Last.fm logo
-# profile: "Scrobbling as X on Last.fm" with profile picture
+# logo: "Scrobbling on X" with provider logo
+# profile: "Scrobbling as X on X" with profile picture
 # none: No small image
 
 # Buttons to show on the Rich Presence
 button1: song
 button2: profile
 # song: "View Song"
-# artist: "View Artist"
-# profile: "Last.fm Profile"
+# profile: "<Provider> Profile"
 # github: "Last.fm Rich Presence"
 # none: No button
 

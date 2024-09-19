@@ -1,4 +1,4 @@
-import config, { clientID } from "./config.ts";
+import config, { clientID } from "./config/index.ts";
 import { ActivityType, LanyardActivity, getLanyard } from "./lanyard.ts";
 
 async function getUserActivities(): Promise<LanyardActivity[]> {

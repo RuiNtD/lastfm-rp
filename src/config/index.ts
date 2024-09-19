@@ -1,12 +1,13 @@
 import z, { object } from "zod";
 import * as YAML from "yaml";
-import ConfigV1 from "./configs/V1.ts";
-import ConfigV2 from "./configs/V2.ts";
-import Config, { OtherConfig, ButtonType } from "./configs/V3.ts";
 import * as fs from "fs/promises";
-import { getLogger } from "./logger.ts";
+import { getLogger } from "../logger.ts";
 
-export { Config, OtherConfig, ButtonType };
+import ConfigV1 from "./V1.ts";
+import ConfigV2 from "./V2.ts";
+import ConfigV3 from "./V3.ts";
+import Config, { OtherConfig, ButtonType, Provider } from "./V4.ts";
+export { Config, OtherConfig, ButtonType, Provider };
 export type Config = z.infer<typeof Config>;
 export type OtherConfig = z.infer<typeof OtherConfig>;
 
@@ -15,6 +16,7 @@ const log = getLogger("Config");
 export const AnyConfig = object({
   _VERSION: z.number(),
 }).passthrough();
+export type AnyConfig = z.input<typeof AnyConfig>;
 
 try {
   const json = await Bun.file("config.json").json();
@@ -40,13 +42,17 @@ let config: Config;
 try {
   let conf = AnyConfig.parse(YAML.parse(file));
   const oldVersion = conf._VERSION;
+
+  // MIGRATIONS
   conf = migrate(conf, ConfigV1);
   conf = migrate(conf, ConfigV2, () => {
     log.warn(
       'Most disableOnPresence options have been removed in favor of "listening"'
     );
   });
+  conf = migrate(conf, ConfigV3);
   config = Config.parse(conf);
+
   if (oldVersion != config._VERSION) {
     await Bun.write("config.yml", YAML.stringify(config));
     await Bun.write("config.yml.bak", file);

@@ -4,7 +4,7 @@ Show your Last.fm Now Playing on your Discord profile
 
 ## Requirements
 
-- [Bun]
+- [Bun](https://bun.sh)
 
 ## Configuration
 
@@ -20,6 +20,10 @@ An option to run Last.fm RP at startup is coming Soon™️ Maybe™️
 
 Run `start` to start Last.fm Rich Presence.
 
-[bun]: https://bun.sh/
+## Special Thanks!
+
+- [Tabler Icons](https://tabler.io/icons)
+- [SVG to PNG](https://github.com/vincerubinetti/svg-to-png)
+
 [lanyard]: https://github.com/Phineas/lanyard
 [lanyard discord]: https://discord.gg/lanyard
