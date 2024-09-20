@@ -104,7 +104,7 @@ async function activity(): Promise<SetActivity | undefined> {
     details: track.name,
     state: `by ${track.artist}`,
 
-    largeImageKey: track.image,
+    largeImageKey: track.image || "album",
     largeImageText: track.album,
     smallImageKey,
     smallImageText,

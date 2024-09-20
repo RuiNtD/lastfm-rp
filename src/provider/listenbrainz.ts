@@ -26,6 +26,12 @@ const Lookup = object({
   artist_mbids: z.array(z.string()).optional(),
   recording_mbid: z.string().optional(),
   release_mbid: z.string().optional(),
+  metadata: object({
+    release: object({
+      caa_id: z.number().optional(),
+      caa_release_mbid: z.string().optional(),
+    }),
+  }),
 });
 type Lookup = z.infer<typeof Lookup>;
 
@@ -42,6 +48,8 @@ async function _lookup(
           recording_name: track,
           artist_name: artist,
           release_name: album,
+          inc: "release",
+          metadata: true,
         },
       }
     );
@@ -89,10 +97,13 @@ async function _getListening(): Promise<Track | undefined> {
       track.artist_name,
       track.release_name
     );
-    if (lookup?.release_mbid)
-      ret.image = `https://coverartarchive.org/release/${lookup.release_mbid}/front-250`;
-    if (lookup?.recording_mbid)
-      ret.url = `https://musicbrainz.org/recording/${lookup.recording_mbid}`;
+    if (lookup) {
+      const { caa_release_mbid, caa_id } = lookup.metadata.release;
+      if (caa_release_mbid && caa_id)
+        ret.image = `http://coverartarchive.org/release/${caa_release_mbid}/${caa_id}-500.jpg`;
+      if (lookup?.recording_mbid)
+        ret.url = `https://musicbrainz.org/recording/${lookup.recording_mbid}`;
+    }
 
     return ret;
   } catch (e) {
