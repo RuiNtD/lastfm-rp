@@ -38,7 +38,7 @@ type Lookup = z.infer<typeof Lookup>;
 async function _lookup(
   track: string,
   artist: string,
-  album: string
+  album?: string
 ): Promise<Lookup | undefined> {
   try {
     const { data } = await api.get(
@@ -68,7 +68,7 @@ const LBPlayingAPI = object({
       object({
         track_metadata: object({
           artist_name: z.string(),
-          release_name: z.string(),
+          release_name: z.string().optional(),
           track_name: z.string(),
         }),
       })
