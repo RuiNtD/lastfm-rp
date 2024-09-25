@@ -27,12 +27,14 @@ const Lookup = v.object({
   artist_mbids: v.optional(v.array(v.string())),
   recording_mbid: v.optional(v.string()),
   release_mbid: v.optional(v.string()),
-  metadata: v.object({
-    release: v.object({
-      caa_id: v.optional(v.number()),
-      caa_release_mbid: v.optional(v.string()),
-    }),
-  }),
+  metadata: v.optional(
+    v.object({
+      release: v.object({
+        caa_id: v.optional(v.number()),
+        caa_release_mbid: v.optional(v.string()),
+      }),
+    })
+  ),
 });
 type Lookup = v.InferOutput<typeof Lookup>;
 
@@ -98,7 +100,7 @@ async function _getListening(): Promise<Track | undefined> {
       track.artist_name,
       track.release_name
     );
-    if (lookup) {
+    if (lookup?.metadata) {
       const { caa_release_mbid, caa_id } = lookup.metadata.release;
       if (caa_release_mbid && caa_id)
         ret.image = `http://coverartarchive.org/release/${caa_release_mbid}/${caa_id}-500.jpg`;
