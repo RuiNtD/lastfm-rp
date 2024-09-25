@@ -11,7 +11,8 @@ const api = axios.create({
   headers: { "User-Agent": "https://github.com/RuiNtD/lastfm-rp" },
 });
 const log = getLogger(
-  chalk.hex("#353070")("Listen") + chalk.hex("#eb743b")("Brainz")
+  // chalk.hex("#353070")("Listen") + chalk.hex("#eb743b")("Brainz")
+  chalk.hex("#eb743b")("ListenBrainz")
 );
 const { username } = config;
 
