@@ -1,1 +1,4 @@
-{ "extends": "@tsconfig/bun" }
+{
+  "extends": "@tsconfig/bun",
+  "exclude": ["src/gui.ts", "src/nowPlayGen.ts"]
+}

@@ -1,7 +1,7 @@
 import config, { lastFmApiKey as apiKey } from "../config/index.ts";
 import chalk from "chalk";
 import { getLogger } from "../logger.ts";
-import z, { object } from "zod";
+import * as v from "valibot";
 import axios, { AxiosError } from "axios";
 import memoize from "memoize";
 import type { Provider, Track, User } from "./index.ts";
@@ -20,38 +20,40 @@ function ready() {
   isReady = true;
 }
 
-export const LastFMError = z.object({ error: z.number(), message: z.string() });
-export type LastFMError = z.infer<typeof LastFMError>;
+export const LastFMError = v.object({ error: v.number(), message: v.string() });
+export type LastFMError = v.InferOutput<typeof LastFMError>;
 
-const hashtext = object({
-  "#text": z.string(),
-}).transform((v) => v["#text"]);
-const image = hashtext.array().transform((v) => v.at(-1));
+const hashtext = v.pipe(
+  v.object({
+    "#text": v.string(),
+  }),
+  v.transform((v) => v["#text"])
+);
+const image = v.pipe(
+  v.array(hashtext),
+  v.transform((v) => v.at(-1))
+);
 
-export const LastFMTrack = object({
+export const LastFMTrack = v.object({
   artist: hashtext,
   image,
   album: hashtext,
-  name: z.string(),
-  "@attr": z
-    .object({
-      nowplaying: z
-        .enum(["true", "false"])
-        .transform((v) => v == "true")
-        .optional(),
+  name: v.string(),
+  "@attr": v.optional(
+    v.object({
+      nowplaying: v.optional(
+        v.pipe(
+          v.picklist(["true", "false"]),
+          v.transform((v) => v == "true")
+        )
+      ),
     })
-    .optional(),
-  url: z.string().url(),
-  date: z
-    .object({
-      uts: z.coerce.number(),
-      "#text": z.string(),
-    })
-    .optional(),
+  ),
+  url: v.pipe(v.string(), v.url()),
 });
-export const LastFMTracks = z.object({
-  recenttracks: z.object({
-    track: z.array(LastFMTrack),
+export const LastFMTracks = v.object({
+  recenttracks: v.object({
+    track: v.array(LastFMTrack),
   }),
 });
 
@@ -65,9 +67,9 @@ async function sendRequest(params: Record<string, string>): Promise<unknown> {
   });
   const { data } = req;
 
-  const error = LastFMError.safeParse(data);
+  const error = v.safeParse(LastFMError, data);
   if (error.success)
-    throw new Error(`Error ${error.data.error}: ${error.data.message}`);
+    throw new Error(`Error ${error.output.error}: ${error.output.message}`);
 
   return data;
 }
@@ -80,7 +82,7 @@ async function _getListening(): Promise<Track | undefined> {
       limit: "1",
     });
     log.trace("lastfm recent", data);
-    const tracks = LastFMTracks.parse(data);
+    const tracks = v.parse(LastFMTracks, data);
     const track = tracks.recenttracks.track[0];
     ready();
 
@@ -99,12 +101,12 @@ async function _getListening(): Promise<Track | undefined> {
   }
 }
 
-const LastFMUser = z.object({
-  name: z.string(),
+const LastFMUser = v.object({
+  name: v.string(),
   image,
-  url: z.string().url(),
+  url: v.pipe(v.string(), v.url()),
 });
-const LastAPIUser = z.object({ user: LastFMUser });
+const LastAPIUser = v.object({ user: LastFMUser });
 
 async function _getUser(): Promise<User | undefined> {
   try {
@@ -112,7 +114,7 @@ async function _getUser(): Promise<User | undefined> {
       method: "user.getinfo",
       user: username,
     });
-    const { user } = LastAPIUser.parse(data);
+    const { user } = v.parse(LastAPIUser, data);
     log.trace("lastfm user", user);
 
     if (!user) return;

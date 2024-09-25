@@ -1,31 +1,35 @@
-import z, { object } from "zod";
+import * as v from "valibot";
 
-export const Provider = z.enum(["lastfm", "listenbrainz"]);
+export const Provider = v.picklist(["lastfm", "listenbrainz"]);
 
-export const OtherConfig = object({
-  any: z.boolean().default(false),
-  listening: z.boolean().default(false),
-  custom: z.array(z.string().regex(/^\d*$/).max(20)).default([]),
+export const OtherConfig = v.object({
+  any: v.optional(v.boolean(), false),
+  listening: v.optional(v.boolean(), false),
+  custom: v.optional(
+    v.array(v.pipe(v.string(), v.digits(), v.maxLength(20))),
+    []
+  ),
 });
 
-export const ButtonType = z
-  .enum(["song", "profile", "github", "none"])
-  .default("none");
-export type ButtonType = z.infer<typeof ButtonType>;
+export const ButtonType = v.optional(
+  v.picklist(["song", "profile", "github", "none"]),
+  "none"
+);
+export type ButtonType = v.InferOutput<typeof ButtonType>;
 
-export default object({
-  _VERSION: z.literal(4),
+export default v.object({
+  _VERSION: v.literal(4),
 
   provider: Provider,
-  username: z.string(),
+  username: v.string(),
 
-  smallImage: z.enum(["logo", "profile", "none"]).default("none"),
+  smallImage: v.optional(v.picklist(["logo", "profile", "none"]), "none"),
 
   button1: ButtonType,
   button2: ButtonType,
 
-  disableOnPresence: OtherConfig.default({}),
+  disableOnPresence: v.optional(OtherConfig, {}),
 
-  lastFmApiKey: z.string().optional(),
-  discordClientId: z.string().optional(),
+  lastFmApiKey: v.optional(v.string()),
+  discordClientId: v.optional(v.string()),
 });

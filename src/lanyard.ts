@@ -1,5 +1,5 @@
 import { ActivityType } from "discord-api-types/v10";
-import { z } from "zod";
+import * as v from "valibot";
 import { getDiscordUser } from "./discord.ts";
 import chalk from "chalk";
 import { getLogger } from "./logger.ts";
@@ -8,25 +8,25 @@ const log = getLogger(chalk.hex("#d7bb87")("Lanyard"));
 
 export { ActivityType };
 
-export const LanyardActivity = z.object({
-  id: z.string(),
-  name: z.string(),
-  type: z.nativeEnum(ActivityType),
-  application_id: z.string().optional(),
+export const LanyardActivity = v.object({
+  id: v.string(),
+  name: v.string(),
+  type: v.enum(ActivityType),
+  application_id: v.optional(v.string()),
 });
-export type LanyardActivity = z.infer<typeof LanyardActivity>;
+export type LanyardActivity = v.InferOutput<typeof LanyardActivity>;
 
-export const LanyardData = z.object({
-  discord_user: z.object({
-    id: z.string(),
+export const LanyardData = v.object({
+  discord_user: v.object({
+    id: v.string(),
   }),
-  activities: LanyardActivity.array(),
-  listening_to_spotify: z.boolean(),
+  activities: v.array(LanyardActivity),
+  listening_to_spotify: v.boolean(),
 });
-export type LanyardData = z.infer<typeof LanyardData>;
+export type LanyardData = v.InferOutput<typeof LanyardData>;
 
-const LanyardEmptyData = z.record(z.never());
-export type LanyardEmptyData = z.infer<typeof LanyardEmptyData>;
+const LanyardEmptyData = v.record(v.string(), v.never());
+export type LanyardEmptyData = v.InferOutput<typeof LanyardEmptyData>;
 
 enum LanyardWSOpcodes {
   Event,
@@ -35,26 +35,30 @@ enum LanyardWSOpcodes {
   Heartbeat,
 }
 
-const LanyardWSInitState = z.object({
-  op: z.literal(LanyardWSOpcodes.Event),
-  t: z.literal("INIT_STATE"),
-  d: z.union([LanyardData, LanyardEmptyData, z.record(LanyardData)]),
+const LanyardWSInitState = v.object({
+  op: v.literal(LanyardWSOpcodes.Event),
+  t: v.literal("INIT_STATE"),
+  d: v.union([
+    LanyardData,
+    LanyardEmptyData,
+    v.record(v.string(), LanyardData),
+  ]),
 });
-const LanyardWSPresenceUpdate = z.object({
-  op: z.literal(LanyardWSOpcodes.Event),
-  t: z.literal("PRESENCE_UPDATE"),
+const LanyardWSPresenceUpdate = v.object({
+  op: v.literal(LanyardWSOpcodes.Event),
+  t: v.literal("PRESENCE_UPDATE"),
   d: LanyardData,
 });
-type LanyardWSPresenceUpdate = z.infer<typeof LanyardWSPresenceUpdate>;
+type LanyardWSPresenceUpdate = v.InferOutput<typeof LanyardWSPresenceUpdate>;
 
-const LanyardWSHello = z.object({
-  op: z.literal(LanyardWSOpcodes.Hello),
-  d: z.object({
-    heartbeat_interval: z.number(),
+const LanyardWSHello = v.object({
+  op: v.literal(LanyardWSOpcodes.Hello),
+  d: v.object({
+    heartbeat_interval: v.number(),
   }),
 });
 
-const LanyardWSMsg = z.union([
+const LanyardWSMsg = v.union([
   LanyardWSInitState,
   LanyardWSPresenceUpdate,
   LanyardWSHello,
@@ -67,11 +71,11 @@ const connectIDs: string[] = [];
 let firstWarn = false;
 
 function isData(d: unknown): d is LanyardData {
-  return LanyardData.safeParse(d).success;
+  return v.safeParse(LanyardData, d).success;
 }
 
 function isEmpty(d: unknown): d is LanyardEmptyData {
-  return LanyardEmptyData.safeParse(d).success;
+  return v.safeParse(LanyardEmptyData, d).success;
 }
 
 function connect() {
@@ -80,7 +84,7 @@ function connect() {
   ws.onmessage = async (event) => {
     const obj = JSON.parse(event.data);
     log.debug(obj);
-    const msg = LanyardWSMsg.parse(obj);
+    const msg = v.parse(LanyardWSMsg, obj);
     const { id } = await getDiscordUser();
     log.debug(msg);
     switch (msg.op) {

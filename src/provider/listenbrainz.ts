@@ -1,7 +1,7 @@
 import config from "../config/index.ts";
 import chalk from "chalk";
 import { getLogger } from "../logger.ts";
-import z, { object } from "zod";
+import * as v from "valibot";
 import axios, { AxiosError } from "axios";
 import memoize from "memoize";
 import type { Provider, Track } from "./index.ts";
@@ -22,18 +22,18 @@ function ready() {
   isReady = true;
 }
 
-const Lookup = object({
-  artist_mbids: z.array(z.string()).optional(),
-  recording_mbid: z.string().optional(),
-  release_mbid: z.string().optional(),
-  metadata: object({
-    release: object({
-      caa_id: z.number().optional(),
-      caa_release_mbid: z.string().optional(),
+const Lookup = v.object({
+  artist_mbids: v.optional(v.array(v.string())),
+  recording_mbid: v.optional(v.string()),
+  release_mbid: v.optional(v.string()),
+  metadata: v.object({
+    release: v.object({
+      caa_id: v.optional(v.number()),
+      caa_release_mbid: v.optional(v.string()),
     }),
   }),
 });
-type Lookup = z.infer<typeof Lookup>;
+type Lookup = v.InferOutput<typeof Lookup>;
 
 async function _lookup(
   track: string,
@@ -53,7 +53,7 @@ async function _lookup(
         },
       }
     );
-    return Lookup.parse(data);
+    return v.parse(Lookup, data);
   } catch (e) {
     if (e instanceof AxiosError) log.error(chalk.red("Error"), e.message);
     else log.error(chalk.red("Error"), e);
@@ -62,14 +62,14 @@ async function _lookup(
 }
 const lookupMetadata = memoize(_lookup);
 
-const LBPlayingAPI = object({
-  payload: object({
-    listens: z.array(
-      object({
-        track_metadata: object({
-          artist_name: z.string(),
-          release_name: z.string().optional(),
-          track_name: z.string(),
+const LBPlayingAPI = v.object({
+  payload: v.object({
+    listens: v.array(
+      v.object({
+        track_metadata: v.object({
+          artist_name: v.string(),
+          release_name: v.optional(v.string()),
+          track_name: v.string(),
         }),
       })
     ),
@@ -81,7 +81,7 @@ async function _getListening(): Promise<Track | undefined> {
     const { data } = await api.get(`/user/${username}/playing-now`);
     log.trace("listenbrainz playing now", data);
 
-    const resp = LBPlayingAPI.parse(data);
+    const resp = v.parse(LBPlayingAPI, data);
     const track = resp.payload.listens.at(0)?.track_metadata;
     ready();
     if (!track) return;

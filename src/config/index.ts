@@ -1,22 +1,20 @@
-import z, { object } from "zod";
+import * as v from "valibot";
 import * as YAML from "yaml";
 import * as fs from "fs/promises";
 import { getLogger } from "../logger.ts";
+import * as ts from "@typeschema/valibot";
 
-import ConfigV1 from "./V1.ts";
-import ConfigV2 from "./V2.ts";
-import ConfigV3 from "./V3.ts";
 import Config, { OtherConfig, ButtonType, Provider } from "./V4.ts";
 export { Config, OtherConfig, ButtonType, Provider };
-export type Config = z.infer<typeof Config>;
-export type OtherConfig = z.infer<typeof OtherConfig>;
+export type Config = v.InferOutput<typeof Config>;
+export type OtherConfig = v.InferOutput<typeof OtherConfig>;
 
 const log = getLogger("Config");
 
-export const AnyConfig = object({
-  _VERSION: z.number(),
-}).passthrough();
-export type AnyConfig = z.input<typeof AnyConfig>;
+export const AnyConfig = v.looseObject({
+  _VERSION: v.number(),
+});
+export type AnyConfig = v.InferOutput<typeof AnyConfig>;
 
 try {
   const json = await Bun.file("config.json").json();
@@ -40,18 +38,18 @@ try {
 
 let config: Config;
 try {
-  let conf = AnyConfig.parse(YAML.parse(file));
+  let conf = v.parse(AnyConfig, YAML.parse(file));
   const oldVersion = conf._VERSION;
 
   // MIGRATIONS
-  conf = migrate(conf, ConfigV1);
-  conf = migrate(conf, ConfigV2, () => {
-    log.warn(
-      'Most disableOnPresence options have been removed in favor of "listening"'
-    );
-  });
-  conf = migrate(conf, ConfigV3);
-  config = Config.parse(conf);
+  config = v.parse(
+    Config,
+    await doMigrate(conf, [
+      await import("./V1.ts"),
+      await import("./V2.ts"),
+      await import("./V3.ts"),
+    ])
+  );
 
   if (oldVersion != config._VERSION) {
     await Bun.write("config.yml", YAML.stringify(config));
@@ -69,13 +67,21 @@ export const lastFmApiKey =
 export const clientID = config.discordClientId || "740140397162135563";
 export default config;
 
-function migrate<T extends z.ZodTypeAny, C>(
-  config: C,
-  schema: T,
-  onSuccess = () => {}
-): z.output<typeof schema> | C {
-  const out = schema.safeParse(config);
-  if (!out.success) return config;
-  onSuccess();
-  return out.data;
+interface MigModule {
+  default: ts.Schema;
+  onSuccess?: () => void;
+}
+
+async function doMigrate(
+  input: unknown,
+  migrations: MigModule[]
+): Promise<unknown> {
+  let conf = input;
+  for (const mig of migrations) {
+    const out = await ts.validate(mig.default, conf);
+    if (!out.success) continue;
+    if (mig.onSuccess) mig.onSuccess();
+    conf = out.data;
+  }
+  return conf;
 }

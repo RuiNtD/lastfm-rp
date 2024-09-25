@@ -1,32 +1,36 @@
-import z, { object } from "zod";
+import * as v from "valibot";
 import ConfigV3 from "./V3.ts";
 
-export const OtherConfig = object({
-  any: z.boolean().default(false),
-  listening: z.boolean().default(true),
-  cider: z.boolean().default(true),
-  iTunesRP: z.boolean().default(true),
-  PreMiDAppleMusic: z.boolean().default(true),
-  custom: z.array(z.string().regex(/^\d*$/).max(20)).optional(),
+export const OtherConfig = v.object({
+  any: v.optional(v.boolean(), false),
+  listening: v.optional(v.boolean(), true),
+  cider: v.optional(v.boolean(), true),
+  iTunesRP: v.optional(v.boolean(), true),
+  PreMiDAppleMusic: v.optional(v.boolean(), true),
+  custom: v.optional(v.array(v.pipe(v.string(), v.digits(), v.maxLength(20)))),
 });
 
-export default object({
-  _VERSION: z.literal(2),
-  lastFmUsername: z
-    .string()
-    .regex(/^[A-Za-z][\w-]+$/)
-    .min(2)
-    .max(15),
-  shareUsername: z.boolean().default(false),
-  disableOnPresence: OtherConfig.optional(),
-  lastFmApiKey: z.string().optional(),
-  discordClientId: z.string().optional(),
-}).transform(
-  (config): z.input<typeof ConfigV3> => ({
-    ...config,
-    _VERSION: 3,
-    smallImage: config.shareUsername ? "profile" : "lastfm",
-    button1: "song",
-    button2: config.shareUsername ? "profile" : "none",
-  })
+export default v.pipe(
+  v.object({
+    _VERSION: v.literal(2),
+    lastFmUsername: v.pipe(
+      v.string(),
+      v.regex(/^[A-Za-z][\w-]+$/),
+      v.minLength(2),
+      v.maxLength(15)
+    ),
+    shareUsername: v.optional(v.boolean(), false),
+    disableOnPresence: v.optional(OtherConfig),
+    lastFmApiKey: v.optional(v.string()),
+    discordClientId: v.optional(v.string()),
+  }),
+  v.transform(
+    (config): v.InferInput<typeof ConfigV3> => ({
+      ...config,
+      _VERSION: 3,
+      smallImage: config.shareUsername ? "profile" : "lastfm",
+      button1: "song",
+      button2: config.shareUsername ? "profile" : "none",
+    })
+  )
 );
