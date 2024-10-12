@@ -16,7 +16,7 @@ and edit it to your liking. `username` is required.
 The "Disable when another app's Rich Presence is detected" feature uses [Lanyard].
 If you would like to use this feature, you will need to join the [Lanyard Discord].
 
-An option to run Scrobble RP at startup is coming Soon™️ Maybe™️
+Run `manager` if you want Scrobble RP to run at startup
 
 ## Usage
 

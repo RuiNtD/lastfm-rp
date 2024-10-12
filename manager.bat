@@ -1,4 +1,4 @@
 @echo off
 title Scrobble Rich Presence
-bun start
+bun manager
 pause
