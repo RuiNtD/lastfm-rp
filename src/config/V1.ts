@@ -17,7 +17,7 @@ export default v.pipe(
       v.string(),
       v.regex(/^[A-Za-z][\w-]+$/),
       v.minLength(2),
-      v.maxLength(15)
+      v.maxLength(15),
     ),
     shareName: v.optional(v.boolean(), false),
     otherEnabled: v.optional(v.boolean(), true),
@@ -44,6 +44,6 @@ export default v.pipe(
         : undefined,
       lastFmApiKey: config.advanced.lastFmKey,
       discordClientId: config.advanced.appId,
-    })
-  )
+    }),
+  ),
 );

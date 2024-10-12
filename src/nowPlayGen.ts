@@ -51,7 +51,7 @@ bgImgSq.src = "assets/np-background-square.png";
 
 export async function drawToCanvas(
   ctx: CanvasRenderingContext2D,
-  roundBorder = true
+  roundBorder = true,
 ) {
   const track = await getLastTrack();
   if (!track) throw "Error: No recently played tracks";
@@ -117,7 +117,7 @@ function roundImage(
   y: number,
   width: number,
   height: number,
-  radius: number
+  radius: number,
 ) {
   ctx.beginPath();
   ctx.moveTo(x, y + radius);
@@ -133,7 +133,7 @@ function centerText(
   text: string,
   x: number,
   y: number,
-  width: number
+  width: number,
 ) {
   const halfW = width / 2;
   const halfX = x + halfW;
@@ -146,7 +146,7 @@ function text(
   text: string,
   x: number,
   y: number,
-  width?: number
+  width?: number,
 ) {
   if (debug) {
     const measure = ctx.measureText(text);

@@ -30,12 +30,12 @@ async function plsConnect() {
       if (client.user?.discriminator != "0")
         log.info(
           chalk.bold.green("Ready!"),
-          client.user?.username + chalk.gray(`#${client.user?.discriminator}`)
+          client.user?.username + chalk.gray(`#${client.user?.discriminator}`),
         );
       else
         log.info(
           chalk.bold.green("Ready!"),
-          chalk.gray("@") + client.user?.username
+          chalk.gray("@") + client.user?.username,
         );
       return;
     } catch (e) {

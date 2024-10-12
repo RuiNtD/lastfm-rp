@@ -12,7 +12,7 @@ const api = axios.create({
 });
 const log = getLogger(
   // chalk.hex("#353070")("Listen") + chalk.hex("#eb743b")("Brainz")
-  chalk.hex("#eb743b")("ListenBrainz")
+  chalk.hex("#eb743b")("ListenBrainz"),
 );
 const { username } = config;
 
@@ -33,7 +33,7 @@ const Lookup = v.object({
         caa_id: v.optional(v.number()),
         caa_release_mbid: v.optional(v.string()),
       }),
-    })
+    }),
   ),
 });
 type Lookup = v.InferOutput<typeof Lookup>;
@@ -41,7 +41,7 @@ type Lookup = v.InferOutput<typeof Lookup>;
 async function _lookup(
   track: string,
   artist: string,
-  album?: string
+  album?: string,
 ): Promise<Lookup | undefined> {
   try {
     const { data } = await api.get(
@@ -54,7 +54,7 @@ async function _lookup(
           inc: "release",
           metadata: true,
         },
-      }
+      },
     );
     return v.parse(Lookup, data);
   } catch (e) {
@@ -74,7 +74,7 @@ const LBPlayingAPI = v.object({
           release_name: v.optional(v.string()),
           track_name: v.string(),
         }),
-      })
+      }),
     ),
   }),
 });
@@ -98,7 +98,7 @@ async function _getListening(): Promise<Track | undefined> {
     const lookup = await lookupMetadata(
       track.track_name,
       track.artist_name,
-      track.release_name
+      track.release_name,
     );
     if (lookup?.metadata) {
       const { caa_release_mbid, caa_id } = lookup.metadata.release;

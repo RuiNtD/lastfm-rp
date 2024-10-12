@@ -9,20 +9,22 @@
   },
   "devDependencies": {
     "@tsconfig/bun": "^1.0.7",
-    "@types/bun": "latest"
+    "@types/bun": "latest",
+    "prettier": "^3.3.3"
   },
   "peerDependencies": {
     "typescript": "^5.0.0"
   },
   "dependencies": {
+    "@inquirer/prompts": "^7.0.0",
     "@typeschema/valibot": "^0.14.0",
     "@xhayper/discord-rpc": "^1.2.0",
     "axios": "^1.7.7",
     "chalk": "^5.3.0",
-    "chokidar": "^4.0.0",
     "discord-api-types": "^0.37.100",
     "luxon": "^3.5.0",
     "memoize": "^10.0.0",
+    "startup-run": "^0.0.10",
     "valibot": "^0.42.1",
     "yaml": "^2.5.1"
   }

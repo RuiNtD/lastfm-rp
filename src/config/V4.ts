@@ -7,13 +7,13 @@ export const OtherConfig = v.object({
   listening: v.optional(v.boolean(), false),
   custom: v.optional(
     v.array(v.pipe(v.string(), v.digits(), v.maxLength(20))),
-    []
+    [],
   ),
 });
 
 export const ButtonType = v.optional(
   v.picklist(["song", "profile", "github", "none"]),
-  "none"
+  "none",
 );
 export type ButtonType = v.InferOutput<typeof ButtonType>;
 

@@ -27,11 +27,11 @@ const hashtext = v.pipe(
   v.object({
     "#text": v.string(),
   }),
-  v.transform((v) => v["#text"])
+  v.transform((v) => v["#text"]),
 );
 const image = v.pipe(
   v.array(hashtext),
-  v.transform((v) => v.at(-1))
+  v.transform((v) => v.at(-1)),
 );
 
 export const LastFMTrack = v.object({
@@ -44,10 +44,10 @@ export const LastFMTrack = v.object({
       nowplaying: v.optional(
         v.pipe(
           v.picklist(["true", "false"]),
-          v.transform((v) => v == "true")
-        )
+          v.transform((v) => v == "true"),
+        ),
       ),
-    })
+    }),
   ),
   url: v.pipe(v.string(), v.url()),
 });

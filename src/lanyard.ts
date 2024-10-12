@@ -145,7 +145,7 @@ async function addID(id: string) {
     JSON.stringify({
       op: LanyardWSOpcodes.Initalize,
       d: { subscribe_to_ids: connectIDs },
-    })
+    }),
   );
 }
 

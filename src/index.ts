@@ -5,12 +5,9 @@ import {
   ActivityType,
 } from "discord-api-types/v10";
 import config, { ButtonType } from "./config/index.ts";
-import chokidar from "chokidar";
-import chalk from "chalk";
 import { hasOtherActivity } from "./otherIDs.ts";
 import { setActivity } from "./discord.ts";
 import { getLogger } from "./logger.ts";
-import * as fs from "fs/promises";
 import { isTruthy } from "./helper.ts";
 
 const log = getLogger();
@@ -19,16 +16,6 @@ let lastStatus = {
   status: "",
   date: new Date(),
 };
-
-await fs.rm(".kill", { force: true });
-
-const watcher = chokidar.watch(".kill", {});
-watcher.on("add", async () => {
-  log.info(chalk.red(`Found .kill file. ${chalk.bold("Exiting...")}`));
-  await Bun.sleep(1000);
-  await fs.rm(".kill", { force: true });
-  process.exit();
-});
 
 setActivity(await activity());
 setInterval(async () => {
@@ -119,7 +106,7 @@ async function activity(): Promise<SetActivity | undefined> {
 }
 
 async function getButton(
-  type: ButtonType
+  type: ButtonType,
 ): Promise<GatewayActivityButton | undefined> {
   switch (type) {
     case "song": {

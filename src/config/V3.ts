@@ -6,13 +6,13 @@ export const OtherConfig = v.object({
   listening: v.optional(v.boolean(), false),
   custom: v.optional(
     v.array(v.pipe(v.string(), v.digits(), v.maxLength(20))),
-    []
+    [],
   ),
 });
 
 export const ButtonType = v.optional(
   v.picklist(["song", "artist", "profile", "github", "none"]),
-  "none"
+  "none",
 );
 export type ButtonType = v.InferOutput<typeof ButtonType>;
 
@@ -23,7 +23,7 @@ export default v.pipe(
       v.string(),
       v.regex(/^[A-Za-z][\w-]+$/),
       v.minLength(2),
-      v.maxLength(15)
+      v.maxLength(15),
     ),
 
     smallImage: v.optional(v.picklist(["lastfm", "profile", "none"]), "none"),
@@ -45,6 +45,6 @@ export default v.pipe(
       smallImage: config.smallImage == "lastfm" ? "logo" : config.smallImage,
       button1: config.button1 == "artist" ? "none" : config.button1,
       button2: config.button2 == "artist" ? "none" : config.button2,
-    })
-  )
+    }),
+  ),
 );

@@ -31,7 +31,7 @@ try {
   file = await Bun.file("config.yml").text();
 } catch {
   log.error(
-    "Config not found. Please create config.yml, using config.example.yml as reference."
+    "Config not found. Please create config.yml, using config.example.yml as reference.",
   );
   process.exit();
 }
@@ -48,7 +48,7 @@ try {
       await import("./V1.ts"),
       await import("./V2.ts"),
       await import("./V3.ts"),
-    ])
+    ]),
   );
 
   if (oldVersion != config._VERSION) {
@@ -74,7 +74,7 @@ interface MigModule {
 
 async function doMigrate(
   input: unknown,
-  migrations: MigModule[]
+  migrations: MigModule[],
 ): Promise<unknown> {
   let conf = input;
   for (const mig of migrations) {

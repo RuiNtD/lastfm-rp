@@ -17,7 +17,7 @@ export default v.pipe(
       v.string(),
       v.regex(/^[A-Za-z][\w-]+$/),
       v.minLength(2),
-      v.maxLength(15)
+      v.maxLength(15),
     ),
     shareUsername: v.optional(v.boolean(), false),
     disableOnPresence: v.optional(OtherConfig),
@@ -31,6 +31,6 @@ export default v.pipe(
       smallImage: config.shareUsername ? "profile" : "lastfm",
       button1: "song",
       button2: config.shareUsername ? "profile" : "none",
-    })
-  )
+    }),
+  ),
 );
