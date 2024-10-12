@@ -1,6 +1,8 @@
-# Last.fm Rich Presence
+# Scrobble Rich Presence
 
-Show your Last.fm Now Playing on your Discord profile
+Show your scrobbler's Now Playing on your Discord profile
+
+Supports [Last.fm] and [ListenBrainz]
 
 ## Requirements
 
@@ -8,17 +10,17 @@ Show your Last.fm Now Playing on your Discord profile
 
 ## Configuration
 
-Before running Last.fm RP, please copy `config.example.yml` to `config.yml`
-and edit it to your liking. `lastFmUsername` is required.
+Before running Scrobble RP, please copy `config.example.yml` to `config.yml`
+and edit it to your liking. `username` is required.
 
 The "Disable when another app's Rich Presence is detected" feature uses [Lanyard].
 If you would like to use this feature, you will need to join the [Lanyard Discord].
 
-An option to run Last.fm RP at startup is coming Soon™️ Maybe™️
+An option to run Scrobble RP at startup is coming Soon™️ Maybe™️
 
 ## Usage
 
-Run `start` to start Last.fm Rich Presence.
+Run `start` to start Scrobble Rich Presence.
 
 ## Special Thanks!
 
@@ -27,3 +29,5 @@ Run `start` to start Last.fm Rich Presence.
 
 [lanyard]: https://github.com/Phineas/lanyard
 [lanyard discord]: https://discord.gg/lanyard
+[last.fm]: https://last.fm/
+[listenbrainz]: https://listenbrainz.org/
