@@ -127,7 +127,7 @@ async function getButton(
     }
     case "github":
       return {
-        label: "Last.fm Rich Presence",
+        label: "Scrobble Rich Presence",
         url: "https://github.com/RuiNtD/lastfm-rp",
       };
   }
