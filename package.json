@@ -10,11 +10,11 @@
   },
   "devDependencies": {
     "@tsconfig/bun": "^1.0.7",
-    "@types/bun": "latest",
+    "@types/bun": "^1.1.11",
     "prettier": "^3.3.3"
   },
   "peerDependencies": {
-    "typescript": "^5.0.0"
+    "typescript": "^5.6.3"
   },
   "dependencies": {
     "@inquirer/prompts": "^7.0.0",
@@ -22,11 +22,11 @@
     "@xhayper/discord-rpc": "^1.2.0",
     "axios": "^1.7.7",
     "chalk": "^5.3.0",
-    "discord-api-types": "^0.37.100",
+    "discord-api-types": "^0.37.102",
     "luxon": "^3.5.0",
     "memoize": "^10.0.0",
     "startup-run": "^0.0.10",
     "valibot": "^0.42.1",
-    "yaml": "^2.5.1"
+    "yaml": "^2.6.0"
   }
 }
