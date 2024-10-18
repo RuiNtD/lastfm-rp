@@ -7,9 +7,9 @@ const run = StartupRun.create("Scrobble Rich Presence", {
   args: ["./src/index.ts"],
 });
 
-console.log(chalk.bold.underline("Scrobble Rich Presence"));
-
 while (true) {
+  console.clear();
+  console.log(chalk.bold.underline("Scrobble Rich Presence"));
   console.log();
   console.log(
     "Run on startup is currently:",
