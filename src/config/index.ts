@@ -2,7 +2,6 @@ import * as v from "valibot";
 import * as YAML from "yaml";
 import * as fs from "fs/promises";
 import { getLogger } from "../logger.ts";
-import * as ts from "@typeschema/valibot";
 
 import Config, { OtherConfig, ButtonType, Provider } from "./V4.ts";
 export { Config, OtherConfig, ButtonType, Provider };
@@ -68,7 +67,7 @@ export const clientID = config.discordClientId || "740140397162135563";
 export default config;
 
 interface MigModule {
-  default: ts.Schema;
+  default: v.GenericSchema;
   onSuccess?: () => void;
 }
 
@@ -78,10 +77,10 @@ async function doMigrate(
 ): Promise<unknown> {
   let conf = input;
   for (const mig of migrations) {
-    const out = await ts.validate(mig.default, conf);
+    const out = v.safeParse(mig.default, conf);
     if (!out.success) continue;
     if (mig.onSuccess) mig.onSuccess();
-    conf = out.data;
+    conf = out.output;
   }
   return conf;
 }
