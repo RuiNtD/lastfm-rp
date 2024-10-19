@@ -6,7 +6,9 @@ export const OtherConfig = v.object({
   any: v.optional(v.boolean(), false),
   listening: v.optional(v.boolean(), false),
   custom: v.optional(
-    v.array(v.pipe(v.string(), v.digits(), v.maxLength(20))),
+    v.array(
+      v.string('"" are required for app IDs in disableOnPresence.custom'),
+    ),
     [],
   ),
 });

@@ -4,6 +4,7 @@ import * as fs from "fs/promises";
 import { getLogger } from "../logger.ts";
 
 import Config, { OtherConfig, ButtonType, Provider } from "./V4.ts";
+import chalk from "chalk";
 export { Config, OtherConfig, ButtonType, Provider };
 export type Config = v.InferOutput<typeof Config>;
 export type OtherConfig = v.InferOutput<typeof OtherConfig>;
@@ -57,7 +58,10 @@ try {
     log.info(`Old config (V${oldVersion}) backed up to config.yml.bak`);
   }
 } catch (e) {
-  log.error("Error parsing config.yml", e);
+  if (v.isValiError(e)) {
+    log.error(chalk.bold("Error parsing config"));
+    log.error(e.message);
+  } else log.error("Error parsing config.yml", e);
   process.exit();
 }
 

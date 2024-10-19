@@ -12,11 +12,13 @@ export async function hasOtherActivity(): Promise<LanyardActivity | undefined> {
   const activities = (await getUserActivities()).filter(
     (v) => v.application_id != clientID && v.id != "custom",
   );
-  const customIDs = opts.custom || [];
+
+  const custom = (opts.custom || []).map((v) => v.trim().toLowerCase());
   return activities.find(
     (v) =>
       opts.any ||
       (opts.listening && v.type == ActivityType.Listening) ||
-      (v.application_id && customIDs.includes(v.application_id)),
+      (v.application_id && custom.includes(v.application_id)) ||
+      custom.includes(v.name.trim().toLowerCase()),
   );
 }

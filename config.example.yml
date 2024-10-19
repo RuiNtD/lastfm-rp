@@ -13,7 +13,7 @@ button1: song
 button2: profile
 # song: "View Song"
 # profile: "<Provider> Profile"
-# github: "Last.fm Rich Presence"
+# github: "Scrobble Rich Presence"
 # none: No button
 
 # Disable when another app's Rich Presence is detected
@@ -21,7 +21,8 @@ button2: profile
 disableOnPresence:
   any: false
   listening: true
-  custom: [] # Application IDs
-
+  custom: # Application IDs or names (case-insensitive)
+    - "12345678901234567890" # "" is required
+    - Apple Music
 # lastFmApiKey: ""
 # discordClientId: ""
