@@ -26,3 +26,4 @@ disableOnPresence:
     - Apple Music
 # lastFmApiKey: ""
 # discordClientId: ""
+# listenBrainzAPIURL: http://localhost:8100

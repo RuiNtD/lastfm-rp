@@ -8,7 +8,7 @@ import type { ListenProvider, Track } from "./index.ts";
 import * as Time from "../lib/time.ts";
 
 const api = axios.create({
-  baseURL: "https://api.listenbrainz.org/1/",
+  baseURL: config.listenBrainzAPIURL || "https://api.listenbrainz.org",
   headers: { "User-Agent": "https://github.com/RuiNtD/lastfm-rp" },
 });
 const log = getLogger(
@@ -45,18 +45,15 @@ async function _lookup(
   album?: string,
 ): Promise<Lookup | undefined> {
   try {
-    const { data } = await api.get(
-      `https://api.listenbrainz.org/1/metadata/lookup/`,
-      {
-        params: {
-          recording_name: track,
-          artist_name: artist,
-          release_name: album,
-          inc: "release",
-          metadata: true,
-        },
+    const { data } = await api.get("/1/metadata/lookup/", {
+      params: {
+        recording_name: track,
+        artist_name: artist,
+        release_name: album,
+        inc: "release",
+        metadata: true,
       },
-    );
+    });
     return v.parse(Lookup, data);
   } catch (e) {
     if (e instanceof AxiosError) log.error(chalk.red("Error"), e.message);
@@ -82,7 +79,7 @@ const LBPlayingAPI = v.object({
 
 async function _getListening(): Promise<Track | undefined | null> {
   try {
-    const { data } = await api.get(`/user/${username}/playing-now`);
+    const { data } = await api.get(`/1/user/${username}/playing-now`);
     log.trace("listenbrainz playing now", data);
 
     const resp = v.parse(LBPlayingAPI, data);

@@ -34,4 +34,5 @@ export default v.object({
 
   lastFmApiKey: v.optional(v.string()),
   discordClientId: v.optional(v.string()),
+  listenBrainzAPIURL: v.optional(v.string()),
 });
