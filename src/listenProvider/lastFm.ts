@@ -5,6 +5,7 @@ import * as v from "valibot";
 import axios, { AxiosError } from "axios";
 import memoize from "memoize";
 import type { Provider, Track, User } from "./index.ts";
+import * as Time from "../lib/time.ts";
 
 const api = axios.create({
   baseURL: "https://ws.audioscrobbler.com/2.0/",
@@ -74,7 +75,7 @@ async function sendRequest(params: Record<string, string>): Promise<unknown> {
   return data;
 }
 
-async function _getListening(): Promise<Track | undefined> {
+async function _getListening(): Promise<Track | undefined | null> {
   try {
     const data = await sendRequest({
       method: "user.getrecenttracks",
@@ -97,7 +98,7 @@ async function _getListening(): Promise<Track | undefined> {
   } catch (e) {
     if (e instanceof AxiosError) log.error(chalk.red("Error"), e.message);
     else log.error(chalk.red("Error"), e);
-    return;
+    return null;
   }
 }
 
@@ -134,7 +135,7 @@ const LastFMProvider: Provider = {
   name: "Last.fm",
   logoAsset: "lastfm",
 
-  getListening: memoize(_getListening, { maxAge: 5_000 }),
-  getUser: memoize(_getUser, { maxAge: 5 * 60_000 }),
+  getListening: memoize(_getListening, { maxAge: Time.Second * 5 }),
+  getUser: memoize(_getUser, { maxAge: Time.Minute * 5 }),
 };
 export default LastFMProvider;

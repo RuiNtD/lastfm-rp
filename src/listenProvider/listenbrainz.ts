@@ -5,6 +5,7 @@ import * as v from "valibot";
 import axios, { AxiosError } from "axios";
 import memoize from "memoize";
 import type { Provider, Track } from "./index.ts";
+import * as Time from "../lib/time.ts";
 
 const api = axios.create({
   baseURL: "https://api.listenbrainz.org/1/",
@@ -79,7 +80,7 @@ const LBPlayingAPI = v.object({
   }),
 });
 
-async function _getListening(): Promise<Track | undefined> {
+async function _getListening(): Promise<Track | undefined | null> {
   try {
     const { data } = await api.get(`/user/${username}/playing-now`);
     log.trace("listenbrainz playing now", data);
@@ -112,7 +113,7 @@ async function _getListening(): Promise<Track | undefined> {
   } catch (e) {
     if (e instanceof AxiosError) log.error(chalk.red("Error"), e.message);
     else log.error(chalk.red("Error"), e);
-    return;
+    return null;
   }
 }
 
@@ -120,7 +121,7 @@ const LBProvider: Provider = {
   name: "ListenBrainz",
   logoAsset: "listenbrainz",
 
-  getListening: memoize(_getListening, { maxAge: 5_000 }),
+  getListening: memoize(_getListening, { maxAge: Time.Second * 5 }),
   async getUser() {
     return {
       name: username,

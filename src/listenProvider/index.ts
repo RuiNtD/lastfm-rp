@@ -20,7 +20,7 @@ export interface Provider {
   readonly name: string;
   readonly logoAsset: string;
 
-  getListening(): Promise<Track | undefined>;
+  getListening(): Promise<Track | undefined | null>;
   getUser(): Promise<User | undefined>;
 }
 

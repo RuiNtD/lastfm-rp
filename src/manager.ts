@@ -3,7 +3,7 @@ import { StartupRun } from "startup-run";
 import { select, confirm } from "@inquirer/prompts";
 import fs from "fs-extra";
 import { $ } from "bun";
-import EnterPrompt from "./EnterPrompt";
+import EnterPrompt from "./lib/EnterPrompt";
 
 const run = StartupRun.create("Scrobble Rich Presence", {
   command: "bun",

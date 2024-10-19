@@ -67,7 +67,10 @@ export async function getDiscordUser() {
   return client.user;
 }
 
-export function setActivity(activity?: SetActivity): void {
+export function setActivity(activity?: SetActivity | null): void {
+  // Do nothing if null
+  if (activity === null) return;
+
   if (activity) client.user?.setActivity(activity);
   else client.user?.clearActivity();
 }

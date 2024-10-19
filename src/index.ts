@@ -1,4 +1,4 @@
-import provider from "./provider/index.ts";
+import listenProvider from "./listenProvider/index.ts";
 import { type SetActivity } from "@xhayper/discord-rpc";
 import {
   type GatewayActivityButton,
@@ -8,7 +8,8 @@ import config, { ButtonType } from "./config/index.ts";
 import { hasOtherActivity } from "./otherIDs.ts";
 import { setActivity } from "./discord.ts";
 import { getLogger } from "./logger.ts";
-import { isTruthy } from "./helper.ts";
+import { isTruthy } from "./lib/helper.ts";
+import * as Time from "./lib/time.ts";
 
 const log = getLogger();
 
@@ -20,7 +21,7 @@ let lastStatus = {
 setActivity(await activity());
 setInterval(async () => {
   setActivity(await activity());
-}, 1000);
+}, Time.Second);
 
 /*
 try {
@@ -48,14 +49,15 @@ export function status(status = "") {
   }
 }
 
-async function activity(): Promise<SetActivity | undefined> {
+async function activity(): Promise<SetActivity | undefined | null> {
   const otherAct = await hasOtherActivity();
   if (otherAct) {
     status(`Detected another player: ${otherAct.name}`);
     return;
   }
 
-  const track = await provider.getListening();
+  const track = await listenProvider.getListening();
+  if (track === null) return null; // Return null if error
   if (!track) {
     status("Nothing playing");
     return;
@@ -68,16 +70,16 @@ async function activity(): Promise<SetActivity | undefined> {
   switch (config.smallImage) {
     // @ts-ignore Intentional fallthrough
     case "profile": {
-      const user = await provider.getUser();
+      const user = await listenProvider.getUser();
       if (user) {
-        smallImageKey = user.image || provider.logoAsset;
-        smallImageText = `Scrobbling as ${user.name} on ${provider.name}`;
+        smallImageKey = user.image || listenProvider.logoAsset;
+        smallImageText = `Scrobbling as ${user.name} on ${listenProvider.name}`;
         break;
       }
     } // fallthrough
     case "logo": {
-      smallImageKey = provider.logoAsset;
-      smallImageText = `Scrobbling on ${provider.name}`;
+      smallImageKey = listenProvider.logoAsset;
+      smallImageText = `Scrobbling on ${listenProvider.name}`;
       break;
     }
   }
@@ -110,7 +112,7 @@ async function getButton(
 ): Promise<GatewayActivityButton | undefined> {
   switch (type) {
     case "song": {
-      const track = await provider.getListening();
+      const track = await listenProvider.getListening();
       if (!track || !track.url) return;
       return {
         label: "View Song",
@@ -118,10 +120,10 @@ async function getButton(
       };
     }
     case "profile": {
-      const user = await provider.getUser();
+      const user = await listenProvider.getUser();
       if (!user || !user.url) return;
       return {
-        label: `${provider.name} Profile`,
+        label: `${listenProvider.name} Profile`,
         url: user.url,
       };
     }
