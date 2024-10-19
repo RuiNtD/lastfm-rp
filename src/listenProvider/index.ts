@@ -16,7 +16,7 @@ export interface User {
   url?: string;
 }
 
-export interface Provider {
+export interface ListenProvider {
   readonly name: string;
   readonly logoAsset: string;
 
@@ -24,7 +24,7 @@ export interface Provider {
   getUser(): Promise<User | undefined>;
 }
 
-function getProvider(): Provider {
+function getProvider(): ListenProvider {
   switch (config.provider) {
     case "lastfm":
       return LastFMProvider;

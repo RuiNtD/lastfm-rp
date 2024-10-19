@@ -3,8 +3,8 @@ import chalk from "chalk";
 import { getLogger } from "../logger.ts";
 import * as v from "valibot";
 import axios, { AxiosError } from "axios";
-import memoize from "memoize";
-import type { Provider, Track } from "./index.ts";
+import memoize from "memoizee";
+import type { ListenProvider, Track } from "./index.ts";
 import * as Time from "../lib/time.ts";
 
 const api = axios.create({
@@ -64,7 +64,7 @@ async function _lookup(
     return;
   }
 }
-const lookupMetadata = memoize(_lookup);
+const lookupMetadata = memoize(_lookup, { promise: true, maxAge: Time.Hour });
 
 const LBPlayingAPI = v.object({
   payload: v.object({
@@ -117,11 +117,14 @@ async function _getListening(): Promise<Track | undefined | null> {
   }
 }
 
-const LBProvider: Provider = {
+const LBProvider: ListenProvider = {
   name: "ListenBrainz",
   logoAsset: "listenbrainz",
 
-  getListening: memoize(_getListening, { maxAge: Time.Second * 5 }),
+  getListening: memoize(_getListening, {
+    promise: true,
+    maxAge: Time.Second * 5,
+  }),
   async getUser() {
     return {
       name: username,

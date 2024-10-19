@@ -3,8 +3,8 @@ import chalk from "chalk";
 import { getLogger } from "../logger.ts";
 import * as v from "valibot";
 import axios, { AxiosError } from "axios";
-import memoize from "memoize";
-import type { Provider, Track, User } from "./index.ts";
+import memoize from "memoizee";
+import type { ListenProvider, Track, User } from "./index.ts";
 import * as Time from "../lib/time.ts";
 
 const api = axios.create({
@@ -131,7 +131,7 @@ async function _getUser(): Promise<User | undefined> {
   }
 }
 
-const LastFMProvider: Provider = {
+const LastFMProvider: ListenProvider = {
   name: "Last.fm",
   logoAsset: "lastfm",
 
