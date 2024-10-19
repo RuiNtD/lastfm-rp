@@ -3,7 +3,7 @@ import chalk from "chalk";
 import { getLogger } from "../logger.ts";
 import * as v from "valibot";
 import axios, { AxiosError } from "axios";
-import memoize from "memoizee";
+import memoize from "memoize";
 import type { ListenProvider, Track, User } from "./index.ts";
 import * as Time from "../lib/time.ts";
 
