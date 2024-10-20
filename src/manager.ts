@@ -74,15 +74,20 @@ while (true) {
       try {
         console.log(chalk.gray("Updating..."));
         await $`git pull`;
-        if (await fs.exists("node_modules")) {
-          console.log(chalk.gray("Installing dependencies..."));
-          await $`bun install`;
-        }
+
+        console.log(chalk.gray("Installing dependencies..."));
+        await $`bun install`;
+
         if (await run.isEnabled()) {
           console.log(chalk.gray("Restarting process..."));
           await run.start();
         }
-        console.log(chalk.bold.green("Updated!"), "Manager will now close");
+
+        console.log(
+          chalk.bold.green("Updated!"),
+          "Make sure Bun is up to date.",
+        );
+        console.log("Manager will now close");
         await pause();
         process.exit();
       } catch (e) {
