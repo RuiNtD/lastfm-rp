@@ -1,20 +1,18 @@
-import * as v from "valibot";
+import { z } from "zod/v4-mini";
 import * as YAML from "yaml";
 import * as fs from "fs/promises";
 import { getLogger } from "../logger.ts";
+import type { StandardSchemaV1 } from "@standard-schema/spec";
+import { equal } from "@std/assert";
 
 import Config, { OtherConfig, ButtonType, Provider } from "./V4.ts";
 import chalk from "chalk";
+import { deepEquals } from "bun";
 export { Config, OtherConfig, ButtonType, Provider };
-export type Config = v.InferOutput<typeof Config>;
-export type OtherConfig = v.InferOutput<typeof OtherConfig>;
+export type Config = z.infer<typeof Config>;
+export type OtherConfig = z.infer<typeof OtherConfig>;
 
 const log = getLogger("Config");
-
-export const AnyConfig = v.looseObject({
-  _VERSION: v.number(),
-});
-export type AnyConfig = v.InferOutput<typeof AnyConfig>;
 
 try {
   const json = await Bun.file("config.json").json();
@@ -38,29 +36,26 @@ try {
 
 let config: Config;
 try {
-  let conf = v.parse(AnyConfig, YAML.parse(file));
-  const oldVersion = conf._VERSION;
+  let oldConf = YAML.parse(file);
 
   // MIGRATIONS
-  config = v.parse(
-    Config,
-    await doMigrate(conf, [
-      await import("./V1.ts"),
-      await import("./V2.ts"),
-      await import("./V3.ts"),
-    ]),
-  );
+  const newConf = await doMigrate(oldConf, [
+    await import("./V1.ts"),
+    await import("./V2.ts"),
+    await import("./V3.ts"),
+  ]);
+  config = Config.parse(newConf);
 
-  if (oldVersion != config._VERSION) {
+  if (!equal(oldConf, newConf)) {
     await Bun.write("config.yml", YAML.stringify(config));
     await Bun.write("config.yml.bak", file);
     log.info(`Migrated config.yml to V${config._VERSION}`);
-    log.info(`Old config (V${oldVersion}) backed up to config.yml.bak`);
+    log.info(`Old config backed up to config.yml.bak`);
   }
 } catch (e) {
-  if (v.isValiError(e)) {
+  if (e instanceof z.core.$ZodError) {
     log.error(chalk.bold("Error parsing config"));
-    log.error(e.message);
+    log.error(z.prettifyError(e));
   } else log.error("Error parsing config.yml", e);
   process.exit();
 }
@@ -71,7 +66,7 @@ export const clientID = config.discordClientId || "740140397162135563";
 export default config;
 
 interface MigModule {
-  default: v.GenericSchema;
+  default: StandardSchemaV1;
   onSuccess?: () => void;
 }
 
@@ -81,10 +76,28 @@ async function doMigrate(
 ): Promise<unknown> {
   let conf = input;
   for (const mig of migrations) {
-    const out = v.safeParse(mig.default, conf);
-    if (!out.success) continue;
+    const out = await standardValidate(mig.default, conf);
+    if (out.issues) continue;
     if (mig.onSuccess) mig.onSuccess();
-    conf = out.output;
+    conf = out.value;
   }
   return conf;
+}
+
+async function standardParse<T extends StandardSchemaV1>(
+  schema: T,
+  input: unknown,
+): Promise<StandardSchemaV1.InferOutput<T>> {
+  let result = await standardValidate(schema, input);
+  if (result.issues) throw new Error(JSON.stringify(result.issues, null, 2));
+  return result.value;
+}
+
+async function standardValidate<T extends StandardSchemaV1>(
+  schema: T,
+  input: unknown,
+): Promise<StandardSchemaV1.Result<StandardSchemaV1.InferOutput<T>>> {
+  let result = schema["~standard"].validate(input);
+  if (result instanceof Promise) result = await result;
+  return result;
 }

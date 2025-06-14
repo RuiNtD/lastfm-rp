@@ -1,43 +1,40 @@
-import * as v from "valibot";
+import { z } from "zod/v4-mini";
 import ConfigV4 from "./V4.ts";
 
-export const OtherConfig = v.object({
-  any: v.optional(v.boolean(), false),
-  listening: v.optional(v.boolean(), false),
-  custom: v.optional(
-    v.array(v.pipe(v.string(), v.digits(), v.maxLength(20))),
+export const OtherConfig = z.object({
+  any: z._default(z.boolean(), false),
+  listening: z._default(z.boolean(), false),
+  custom: z._default(
+    z.array(z.string().check(z.regex(/^\d+$/), z.maxLength(20))),
     [],
   ),
 });
 
-export const ButtonType = v.optional(
-  v.picklist(["song", "artist", "profile", "github", "none"]),
+export const ButtonType = z._default(
+  z.enum(["song", "artist", "profile", "github", "none"]),
   "none",
 );
-export type ButtonType = v.InferOutput<typeof ButtonType>;
+export type ButtonType = z.infer<typeof ButtonType>;
 
-export default v.pipe(
-  v.object({
-    _VERSION: v.literal(3),
-    lastFmUsername: v.pipe(
-      v.string(),
-      v.regex(/^[A-Za-z][\w-]+$/),
-      v.minLength(2),
-      v.maxLength(15),
-    ),
+export default z.pipe(
+  z.object({
+    _VERSION: z.literal(3),
+    lastFmUsername: z
+      .string()
+      .check(z.regex(/^[A-Za-z][\w-]+$/), z.minLength(2), z.maxLength(15)),
 
-    smallImage: v.optional(v.picklist(["lastfm", "profile", "none"]), "none"),
+    smallImage: z._default(z.enum(["lastfm", "profile", "none"]), "none"),
 
     button1: ButtonType,
     button2: ButtonType,
 
-    disableOnPresence: v.optional(OtherConfig, {}),
+    disableOnPresence: z.prefault(OtherConfig, {}),
 
-    lastFmApiKey: v.optional(v.string()),
-    discordClientId: v.optional(v.string()),
+    lastFmApiKey: z.optional(z.string()),
+    discordClientId: z.optional(z.string()),
   }),
-  v.transform(
-    (config): v.InferInput<typeof ConfigV4> => ({
+  z.transform(
+    (config): z.input<typeof ConfigV4> => ({
       ...config,
       _VERSION: 4,
       provider: "lastfm",

@@ -1,34 +1,31 @@
-import * as v from "valibot";
+import { z } from "zod/v4-mini";
 import ConfigV2 from "./V2.ts";
 
-export const OtherConfig = v.object({
-  any: v.optional(v.boolean(), false),
-  listening: v.optional(v.boolean(), true),
-  cider: v.optional(v.boolean(), true),
-  iTRP: v.optional(v.boolean(), true),
-  AMPMD: v.optional(v.boolean(), true),
-  custom: v.array(v.pipe(v.string(), v.digits(), v.maxLength(20))),
+export const OtherConfig = z.object({
+  any: z._default(z.boolean(), false),
+  listening: z._default(z.boolean(), true),
+  cider: z._default(z.boolean(), true),
+  iTRP: z._default(z.boolean(), true),
+  AMPMD: z._default(z.boolean(), true),
+  custom: z.array(z.string().check(z.regex(/^\d+$/), z.maxLength(20))),
 });
 
-export default v.pipe(
-  v.object({
-    _VERSION: v.literal(1),
-    username: v.pipe(
-      v.string(),
-      v.regex(/^[A-Za-z][\w-]+$/),
-      v.minLength(2),
-      v.maxLength(15),
-    ),
-    shareName: v.optional(v.boolean(), false),
-    otherEnabled: v.optional(v.boolean(), true),
-    other: v.optional(OtherConfig),
-    advanced: v.object({
-      lastFmKey: v.optional(v.string()),
-      appId: v.optional(v.string()),
+export default z.pipe(
+  z.object({
+    _VERSION: z.literal(1),
+    username: z
+      .string()
+      .check(z.regex(/^[A-Za-z][\w-]+$/), z.minLength(2), z.maxLength(15)),
+    shareName: z._default(z.boolean(), false),
+    otherEnabled: z._default(z.boolean(), true),
+    other: z.optional(OtherConfig),
+    advanced: z.object({
+      lastFmKey: z.optional(z.string()),
+      appId: z.optional(z.string()),
     }),
   }),
-  v.transform(
-    (config): v.InferInput<typeof ConfigV2> => ({
+  z.transform(
+    (config): z.input<typeof ConfigV2> => ({
       _VERSION: 2,
       lastFmUsername: config.username,
       shareUsername: config.shareName,

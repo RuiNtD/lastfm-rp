@@ -1,11 +1,11 @@
 import config from "../config/index.ts";
 import chalk from "chalk";
 import { getLogger } from "../logger.ts";
-import * as v from "valibot";
+import { z } from "zod/v4-mini";
 import axios, { AxiosError } from "axios";
 import memoize from "memoize";
 import type { ListenProvider, Track } from "./index.ts";
-import * as Time from "../lib/time.ts";
+import * as Time from "@std/datetime/constants";
 
 const api = axios.create({
   baseURL: config.listenBrainzAPIURL || "https://api.listenbrainz.org",
@@ -24,20 +24,20 @@ function ready() {
   isReady = true;
 }
 
-const Lookup = v.object({
-  artist_mbids: v.optional(v.array(v.string())),
-  recording_mbid: v.optional(v.string()),
-  release_mbid: v.optional(v.string()),
-  metadata: v.optional(
-    v.object({
-      release: v.object({
-        caa_id: v.optional(v.number()),
-        caa_release_mbid: v.optional(v.string()),
+const Lookup = z.object({
+  artist_mbids: z.optional(z.array(z.string())),
+  recording_mbid: z.optional(z.string()),
+  release_mbid: z.optional(z.string()),
+  metadata: z.optional(
+    z.object({
+      release: z.object({
+        caa_id: z.optional(z.number()),
+        caa_release_mbid: z.optional(z.string()),
       }),
     }),
   ),
 });
-type Lookup = v.InferOutput<typeof Lookup>;
+type Lookup = z.infer<typeof Lookup>;
 
 async function _lookup(
   track: string,
@@ -54,23 +54,23 @@ async function _lookup(
         metadata: true,
       },
     });
-    return v.parse(Lookup, data);
+    return Lookup.parse(data);
   } catch (e) {
     if (e instanceof AxiosError) log.error(chalk.red("Error"), e.message);
     else log.error(chalk.red("Error"), e);
     return;
   }
 }
-const lookupMetadata = memoize(_lookup, { maxAge: Time.Hour });
+const lookupMetadata = memoize(_lookup, { maxAge: Time.HOUR });
 
-const LBPlayingAPI = v.object({
-  payload: v.object({
-    listens: v.array(
-      v.object({
-        track_metadata: v.object({
-          artist_name: v.string(),
-          release_name: v.optional(v.string()),
-          track_name: v.string(),
+const LBPlayingAPI = z.object({
+  payload: z.object({
+    listens: z.array(
+      z.object({
+        track_metadata: z.object({
+          artist_name: z.string(),
+          release_name: z.optional(z.string()),
+          track_name: z.string(),
         }),
       }),
     ),
@@ -82,7 +82,7 @@ async function _getListening(): Promise<Track | undefined | null> {
     const { data } = await api.get(`/1/user/${username}/playing-now`);
     log.trace("listenbrainz playing now", data);
 
-    const resp = v.parse(LBPlayingAPI, data);
+    const resp = LBPlayingAPI.parse(data);
     const track = resp.payload.listens.at(0)?.track_metadata;
     ready();
     if (!track) return;
@@ -118,7 +118,7 @@ const LBProvider: ListenProvider = {
   name: "ListenBrainz",
   logoAsset: "listenbrainz",
 
-  getListening: memoize(_getListening, { maxAge: Time.Second * 5 }),
+  getListening: memoize(_getListening, { maxAge: Time.SECOND * 5 }),
   async getUser() {
     return {
       name: username,

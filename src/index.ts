@@ -9,7 +9,7 @@ import { hasOtherActivity } from "./otherIDs.ts";
 import { setActivity } from "./discord.ts";
 import { getLogger } from "./logger.ts";
 import { isTruthy } from "./lib/helper.ts";
-import * as Time from "./lib/time.ts";
+import * as Time from "@std/datetime/constants";
 
 const log = getLogger();
 
@@ -21,7 +21,7 @@ let lastStatus = {
 setActivity(await activity());
 setInterval(async () => {
   setActivity(await activity());
-}, Time.Second);
+}, Time.SECOND);
 
 /*
 try {
