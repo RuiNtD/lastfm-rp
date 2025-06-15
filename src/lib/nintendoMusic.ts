@@ -1,8 +1,7 @@
 import axios, { AxiosError } from "axios";
 import memoize from "memoize";
-// import { memoize, TtlCache, type MemoizationCacheResult } from "@std/cache";
 import { z } from "zod/v4";
-import { DAY, HOUR } from "@std/datetime/constants";
+import { DAY } from "@std/datetime/constants";
 import type { Track } from "../listenProvider";
 
 export const NintendoArtist = "Nintendo Co., Ltd.";

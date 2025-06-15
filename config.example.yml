@@ -1,4 +1,4 @@
-_VERSION: 5 # Do not touch this line!
+_VERSION: 6 # Do not touch this line!
 
 provider: lastfm # lastfm, listenbrainz
 username: ""
@@ -9,6 +9,7 @@ smallImage: profile # What to show on the small image
 # none: No small image
 
 # Buttons to show on the Rich Presence
+# NOTE: You can't see the buttons on your own profile
 button1: song
 button2: profile
 # song: "View Song"
@@ -17,8 +18,12 @@ button2: profile
 # none: No button
 
 # Uses per-song art from Nintendo Music API instead of album art
-# Note: Discord will crop the art to 1:1 ratio
 useNintendoMusicArt: true
+# Formats Nintendo Music tracks into something like this:
+#   Calamari Inkantation
+#   by Squid Sisters
+#   Splatoon
+useNintendoMusicFormat: true
 
 # Disable when another app's Rich Presence is detected
 # Requires joining https://discord.gg/lanyard

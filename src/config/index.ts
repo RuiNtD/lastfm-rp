@@ -5,9 +5,10 @@ import { getLogger } from "../logger.ts";
 import type { StandardSchemaV1 } from "@standard-schema/spec";
 import { equal } from "@std/assert";
 import * as process from "node:process";
-
-import Config, { OtherConfig, ButtonType, Provider } from "./V5.ts";
 import chalk from "chalk";
+
+import Config, { OtherConfig, ButtonType, Provider } from "./V6.ts";
+
 export { Config, OtherConfig, ButtonType, Provider };
 export type Config = z.infer<typeof Config>;
 export type OtherConfig = z.infer<typeof OtherConfig>;
@@ -44,14 +45,15 @@ try {
     await import("./V2.ts"),
     await import("./V3.ts"),
     await import("./V4.ts"),
+    await import("./V5.ts"),
   ]);
   config = Config.parse(newConf);
 
   if (!equal(oldConf, newConf)) {
     await Bun.write("config.yml", YAML.stringify(config));
     await Bun.write("config.yml.bak", file);
-    log.info(`Migrated config.yml to V${config._VERSION}`);
-    log.info(`Old config backed up to config.yml.bak`);
+    log.info("Migrated config.yml to new version");
+    log.info("Old config backed up to config.yml.bak");
   }
 } catch (e) {
   if (e instanceof z.core.$ZodError) {

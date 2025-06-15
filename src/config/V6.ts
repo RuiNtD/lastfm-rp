@@ -1,11 +1,10 @@
 import { z, object } from "zod/v4";
-import ConfigV6 from "./V6.ts";
 
-import { Provider, OtherConfig, ButtonType } from "./V4.ts";
+import { Provider, OtherConfig, ButtonType } from "./V5.ts";
 export { Provider, OtherConfig, ButtonType };
 
 export default object({
-  _VERSION: z.literal(5),
+  _VERSION: z.literal(6),
 
   provider: Provider,
   username: z.string(),
@@ -16,16 +15,11 @@ export default object({
   button2: ButtonType,
 
   useNintendoMusicArt: z.boolean().default(true),
+  useNintendoMusicFormat: z.boolean().default(true),
 
   disableOnPresence: OtherConfig.prefault({}),
 
   lastFmApiKey: z.string().optional(),
   discordClientId: z.string().optional(),
   listenBrainzAPIURL: z.string().optional(),
-}).transform(
-  (config): z.input<typeof ConfigV6> => ({
-    ...config,
-    _VERSION: 6,
-    useNintendoMusicFormat: false,
-  }),
-);
+});

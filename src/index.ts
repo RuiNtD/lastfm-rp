@@ -99,13 +99,21 @@ async function activity(): Promise<SetActivity | undefined | null> {
   }
 
   if (isNintendo) {
-    ret.state = undefined;
+    if (config.useNintendoMusicFormat) {
+      ret.state = undefined;
+      const nameParts = track.name.split(" / ");
+      if (nameParts.length == 2) {
+        ret.details = nameParts[0];
+        ret.state = `by ${nameParts[1]}`;
+      }
+    }
     if (config.useNintendoMusicArt) {
       const thumb = await getNintendoThumbnail(track);
       if (thumb) ret.largeImageKey = thumb;
     }
   }
 
+  log.debug("activity", ret);
   return ret;
 }
 
