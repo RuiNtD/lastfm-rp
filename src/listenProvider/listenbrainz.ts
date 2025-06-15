@@ -80,7 +80,7 @@ const LBPlayingAPI = z.object({
 async function _getListening(): Promise<Track | undefined | null> {
   try {
     const { data } = await api.get(`/1/user/${username}/playing-now`);
-    log.trace("listenbrainz playing now", data);
+    log.debug("listenbrainz playing now", data);
 
     const resp = LBPlayingAPI.parse(data);
     const track = resp.payload.listens.at(0)?.track_metadata;

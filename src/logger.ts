@@ -1,53 +1,61 @@
 import chalk from "chalk";
+import * as util from "node:util";
 
 enum LogLevel {
-  TRACE,
   DEBUG,
   INFO,
   WARN,
   ERROR,
+  LOG,
 }
 
+type LogFn = (...data: unknown[]) => void;
+type Logger = Record<Lowercase<keyof typeof LogLevel>, LogFn>;
+
 const levelPrefixes: Record<LogLevel, string> = {
-  [LogLevel.TRACE]: chalk.gray("TRACE"),
   [LogLevel.DEBUG]: chalk.gray("DEBUG"),
-  [LogLevel.INFO]: "",
-  [LogLevel.WARN]: chalk.yellowBright("WARN"),
-  [LogLevel.ERROR]: chalk.redBright("ERROR"),
+  [LogLevel.INFO]: chalk.cyan("INFO "),
+  [LogLevel.WARN]: chalk.yellow("WARN "),
+  [LogLevel.ERROR]: chalk.red("ERROR"),
+  [LogLevel.LOG]: "",
 };
 
-const currentLevel = LogLevel.INFO;
+const levelFns: Record<LogLevel, LogFn> = {
+  [LogLevel.DEBUG]: console.debug,
+  [LogLevel.INFO]: console.info,
+  [LogLevel.WARN]: console.warn,
+  [LogLevel.ERROR]: console.error,
+  [LogLevel.LOG]: console.log,
+};
 
-type Logger = Record<
-  Lowercase<keyof typeof LogLevel>,
-  (...data: unknown[]) => void
->;
+const currentLevel = (() => {
+  const level = process.env.LOG_LEVEL?.toUpperCase() || "";
+  if (level in LogLevel) return LogLevel[level as keyof typeof LogLevel];
+  return LogLevel.INFO;
+})();
 
 export function getLogger(prefix?: string): Logger {
   return {
-    trace: (...data: unknown[]) =>
-      log(LogLevel.TRACE, console.trace, prefix, ...data),
-    debug: (...data: unknown[]) =>
-      log(LogLevel.DEBUG, console.debug, prefix, ...data),
-    info: (...data: unknown[]) =>
-      log(LogLevel.INFO, console.info, prefix, ...data),
-    warn: (...data: unknown[]) =>
-      log(LogLevel.WARN, console.warn, prefix, ...data),
-    error: (...data: unknown[]) =>
-      log(LogLevel.ERROR, console.error, prefix, ...data),
+    debug: (...data: unknown[]) => log(LogLevel.DEBUG, prefix, ...data),
+    info: (...data: unknown[]) => log(LogLevel.INFO, prefix, ...data),
+    warn: (...data: unknown[]) => log(LogLevel.WARN, prefix, ...data),
+    error: (...data: unknown[]) => log(LogLevel.ERROR, prefix, ...data),
+    log: (...data: unknown[]) => log(LogLevel.LOG, prefix, ...data),
   };
 }
 
-function log(
-  level: LogLevel,
-  fn: (...data: unknown[]) => void = console.log,
-  prefix?: string,
-  ...data: unknown[]
-) {
-  if (prefix) data.unshift(chalk.bold(`[${prefix}]`));
+function log(level?: LogLevel, prefix?: string, ...data: unknown[]) {
+  const prefixes: string[] = [];
+  let logFn: LogFn = console.log;
 
-  const levelPrefix = levelPrefixes[level];
-  if (levelPrefix) data.unshift(chalk.bold(levelPrefix));
+  if (level != undefined) {
+    if (level < currentLevel) return;
+    logFn = levelFns[level];
 
-  if (level >= currentLevel) fn(...data);
+    const levelPrefix = levelPrefixes[level];
+    if (levelPrefix) prefixes.push(chalk.bold(levelPrefix));
+  }
+  if (prefix) prefixes.push(chalk.gray.bold(`[${prefix}]`));
+
+  logFn("%s", ...prefixes, util.format(...data));
 }

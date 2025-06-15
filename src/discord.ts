@@ -2,6 +2,8 @@ import { type SetActivity, Client } from "@xhayper/discord-rpc";
 import { clientID } from "./config/index.ts";
 import chalk from "chalk";
 import { getLogger } from "./logger.ts";
+import { delay, retry } from "@std/async";
+import { SECOND } from "@std/datetime/constants";
 
 const log = getLogger(chalk.hex("#5865f2")("Discord"));
 
@@ -22,29 +24,29 @@ export const client = new Client({
 // });
 
 async function plsConnect() {
-  while (true) {
-    try {
-      if (client.isConnected) return;
+  await retry(
+    async () => {
+      try {
+        if (client.isConnected) return;
 
-      await client.connect();
-      if (client.user?.discriminator != "0")
-        log.info(
-          chalk.bold.green("Ready!"),
-          client.user?.username + chalk.gray(`#${client.user?.discriminator}`),
-        );
-      else
-        log.info(
-          chalk.bold.green("Ready!"),
-          chalk.gray("@") + client.user?.username,
-        );
-      return;
-    } catch (e) {
-      log.error("Failed to connect. Retrying in 5 seconds...");
-      log.debug(e);
-
-      await Bun.sleep(5000);
-    }
-  }
+        await client.connect();
+        let username = chalk.dim("@") + client.user?.username;
+        if (client.user?.discriminator != "0")
+          username =
+            client.user?.username + chalk.dim(`#${client.user?.discriminator}`);
+        log.info(chalk.bold.green("Ready!"), username);
+      } catch (e) {
+        log.error("Failed to connect.");
+        log.debug(e);
+        throw e;
+      }
+    },
+    {
+      maxAttempts: Number.POSITIVE_INFINITY,
+      minTimeout: SECOND * 5,
+      maxTimeout: SECOND * 15,
+    },
+  );
 }
 await plsConnect();
 
@@ -61,9 +63,7 @@ async function checkRetry() {
 setInterval(checkRetry, 1_000);
 
 export async function getDiscordUser() {
-  while (!client.user) {
-    await Bun.sleep(0);
-  }
+  while (!client.user) await delay(0);
   return client.user;
 }
 

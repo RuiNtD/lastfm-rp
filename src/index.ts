@@ -47,7 +47,7 @@ export function status(status = "") {
       status,
       date: new Date(),
     };
-    if (status) log.info(status);
+    if (status) log.log(status);
   }
 }
 
@@ -55,18 +55,18 @@ async function activity(): Promise<SetActivity | undefined | null> {
   const otherAct = await hasOtherActivity();
   if (otherAct)
     return void status(
-      chalk.gray(chalk.bold("Detected another player: ") + otherAct.name),
+      chalk.dim(chalk.bold("Detected another player: ") + otherAct.name),
     );
 
   const track = await listenProvider.getListening();
   if (track === null) return null; // Return null if error
-  if (!track) return void status(chalk.gray("Nothing playing"));
+  if (!track) return void status(chalk.dim("Nothing playing"));
+  const isNintendo = track.artist == NintendoArtist;
 
   let stat = chalk.bold("Now playing: ") + track.name;
-  if (track.artist == NintendoArtist)
-    stat += chalk.gray(` from ${track.album}`) + ` (Nintendo Music)`;
-  else if (track.artist) stat += chalk.gray(` by ${track.artist}`);
+  if (track.artist && !isNintendo) stat += chalk.gray(` by ${track.artist}`);
   else if (track.album) stat += chalk.gray(` from ${track.album}`);
+  if (isNintendo) stat += chalk.dim(` (Nintendo Music)`);
   status(stat);
 
   const ret: SetActivity = {
@@ -98,7 +98,7 @@ async function activity(): Promise<SetActivity | undefined | null> {
     }
   }
 
-  if (track.artist == NintendoArtist) {
+  if (isNintendo) {
     ret.state = undefined;
     if (config.useNintendoMusicArt) {
       const thumb = await getNintendoThumbnail(track);

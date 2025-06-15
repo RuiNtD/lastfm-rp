@@ -1,9 +1,10 @@
 import { z } from "zod/v4-mini";
 import * as YAML from "yaml";
-import * as fs from "fs/promises";
+import * as fs from "node:fs/promises";
 import { getLogger } from "../logger.ts";
 import type { StandardSchemaV1 } from "@standard-schema/spec";
 import { equal } from "@std/assert";
+import * as process from "node:process";
 
 import Config, { OtherConfig, ButtonType, Provider } from "./V5.ts";
 import chalk from "chalk";
@@ -14,7 +15,7 @@ export type OtherConfig = z.infer<typeof OtherConfig>;
 const log = getLogger("Config");
 
 try {
-  const json = await Bun.file("config.json").json();
+  const json = JSON.parse(await fs.readFile("config.json", "utf-8"));
   await Bun.write("config.yml", YAML.stringify(json));
   await fs.rename("config.json", "config.json.bak");
   log.info("Converted config.json to config.yml");
@@ -25,7 +26,7 @@ try {
 
 let file: string;
 try {
-  file = await Bun.file("config.yml").text();
+  file = await fs.readFile("config.yml", "utf-8");
 } catch {
   log.error(
     "Config not found. Please create config.yml, using config.example.yml as reference.",
@@ -35,7 +36,7 @@ try {
 
 let config: Config;
 try {
-  let oldConf = YAML.parse(file);
+  const oldConf = YAML.parse(file);
 
   // MIGRATIONS
   const newConf = await doMigrate(oldConf, [
@@ -82,15 +83,6 @@ async function doMigrate(
     conf = out.value;
   }
   return conf;
-}
-
-async function standardParse<T extends StandardSchemaV1>(
-  schema: T,
-  input: unknown,
-): Promise<StandardSchemaV1.InferOutput<T>> {
-  let result = await standardValidate(schema, input);
-  if (result.issues) throw new Error(JSON.stringify(result.issues, null, 2));
-  return result.value;
 }
 
 async function standardValidate<T extends StandardSchemaV1>(

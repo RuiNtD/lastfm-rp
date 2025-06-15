@@ -68,7 +68,7 @@ async function _getListening(): Promise<Track | undefined | null> {
       user: username,
       limit: "1",
     });
-    log.trace("lastfm recent", data);
+    log.debug("lastfm recent", data);
     const tracks = LastFMTracks.parse(data);
     const track = tracks.recenttracks.track[0];
     ready();
@@ -102,7 +102,7 @@ async function _getUser(): Promise<User | undefined> {
       user: username,
     });
     const { user } = LastAPIUser.parse(data);
-    log.trace("lastfm user", user);
+    log.debug("lastfm user", user);
 
     if (!user) return;
     return {

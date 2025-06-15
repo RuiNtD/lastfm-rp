@@ -7,6 +7,7 @@
         "@inquirer/prompts": "^7.5.3",
         "@standard-schema/spec": "^1.0.0",
         "@std/assert": "npm:@jsr/std__assert",
+        "@std/async": "npm:@jsr/std__async",
         "@std/datetime": "npm:@jsr/std__datetime",
         "@xhayper/discord-rpc": "^1.2.2",
         "axios": "^1.10.0",
@@ -77,6 +78,8 @@
     "@standard-schema/spec": ["@standard-schema/spec@1.0.0", "", {}, "sha512-m2bOd0f2RT9k8QJx1JN85cZYyH1RqFBdlwtkSlf4tBDYLCiiZnv1fIIwacK6cqwXavOydf0NPToMQgpKq+dVlA=="],
 
     "@std/assert": ["@jsr/std__assert@1.0.13", "https://npm.jsr.io/~/11/@jsr/std__assert/1.0.13.tgz", { "dependencies": { "@jsr/std__internal": "^1.0.6" } }, "sha512-rZ44REoi2/p+gqu8OfkcNeaTOSiG1kD6v8gyA0YjkXsOkDsiGw9g8h7JuGC/OD7GgOVgTEY+9Cih49Y18rkrCQ=="],
+
+    "@std/async": ["@jsr/std__async@1.0.13", "https://npm.jsr.io/~/11/@jsr/std__async/1.0.13.tgz", {}, "sha512-GEApyNtzauJ0kEZ/GxebSkdEN0t29qJtkw+WEvzYTwkL6fHX8cq3YWzRjCqHu+4jMl+rpHiwyr/lfitNInntzA=="],
 
     "@std/datetime": ["@jsr/std__datetime@0.225.5", "https://npm.jsr.io/~/11/@jsr/std__datetime/0.225.5.tgz", {}, "sha512-J11UeI2KGbnIdARtAU0H+sTDfBIYQPI3jVpzvjxhWNi/KWZt+U3nnFfyzx9ZyxRG5xKc37GGJ6bCbLC0iFkZEA=="],
 

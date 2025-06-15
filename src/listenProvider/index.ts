@@ -1,6 +1,6 @@
-import config from "../config";
-import LastFMProvider from "./lastFm";
-import LBProvider from "./listenbrainz";
+import config from "../config/index.ts";
+import LastFMProvider from "./lastFm.ts";
+import LBProvider from "./listenbrainz.ts";
 
 export interface Track {
   name: string;

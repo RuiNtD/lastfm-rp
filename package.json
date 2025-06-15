@@ -20,6 +20,7 @@
     "@inquirer/prompts": "^7.5.3",
     "@standard-schema/spec": "^1.0.0",
     "@std/assert": "npm:@jsr/std__assert",
+    "@std/async": "npm:@jsr/std__async",
     "@std/datetime": "npm:@jsr/std__datetime",
     "@xhayper/discord-rpc": "^1.2.2",
     "axios": "^1.10.0",

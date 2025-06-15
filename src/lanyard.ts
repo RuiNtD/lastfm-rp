@@ -3,6 +3,7 @@ import { z } from "zod/v4";
 import { getDiscordUser } from "./discord.ts";
 import chalk from "chalk";
 import { getLogger } from "./logger.ts";
+import { delay } from "@std/async";
 
 const log = getLogger(chalk.hex("#d7bb87")("Lanyard"));
 
@@ -144,9 +145,7 @@ async function addID(id: string) {
 }
 
 export async function getLanyard() {
-  while (!gotFirstData) {
-    await Bun.sleep(0);
-  }
+  while (!gotFirstData) await delay(0);
 
   const { id } = await getDiscordUser();
   await addID(id);
