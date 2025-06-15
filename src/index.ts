@@ -1,4 +1,4 @@
-import listenProvider from "./listenProvider/index.ts";
+import listenProvider, { type Track } from "./listenProvider/index.ts";
 import { type SetActivity } from "@xhayper/discord-rpc";
 import {
   type GatewayActivityButton,
@@ -10,6 +10,8 @@ import { setActivity } from "./discord.ts";
 import { getLogger } from "./logger.ts";
 import { isTruthy } from "./lib/helper.ts";
 import * as Time from "@std/datetime/constants";
+import { getNintendoThumbnail, NintendoArtist } from "./lib/nintendoMusic.ts";
+import chalk from "chalk";
 
 const log = getLogger();
 
@@ -51,60 +53,60 @@ export function status(status = "") {
 
 async function activity(): Promise<SetActivity | undefined | null> {
   const otherAct = await hasOtherActivity();
-  if (otherAct) {
-    status(`Detected another player: ${otherAct.name}`);
-    return;
-  }
+  if (otherAct)
+    return void status(
+      chalk.gray(chalk.bold("Detected another player: ") + otherAct.name),
+    );
 
   const track = await listenProvider.getListening();
   if (track === null) return null; // Return null if error
-  if (!track) {
-    status("Nothing playing");
-    return;
-  }
-  status(`Now playing: ${track.name} by ${track.artist}`);
+  if (!track) return void status(chalk.gray("Nothing playing"));
 
-  let smallImageKey: string | undefined;
-  let smallImageText: string | undefined;
+  let stat = chalk.bold("Now playing: ") + track.name;
+  if (track.artist == NintendoArtist)
+    stat += chalk.gray(` from ${track.album}`) + ` (Nintendo Music)`;
+  else if (track.artist) stat += chalk.gray(` by ${track.artist}`);
+  else if (track.album) stat += chalk.gray(` from ${track.album}`);
+  status(stat);
 
-  switch (config.smallImage) {
-    // @ts-ignore Intentional fallthrough
-    case "profile": {
-      const user = await listenProvider.getUser();
-      if (user) {
-        smallImageKey = user.image || listenProvider.logoAsset;
-        smallImageText = `Scrobbling as ${user.name} on ${listenProvider.name}`;
-        break;
-      }
-    } // fallthrough
-    case "logo": {
-      smallImageKey = listenProvider.logoAsset;
-      smallImageText = `Scrobbling on ${listenProvider.name}`;
-      break;
-    }
-  }
-
-  log.trace("smallImageKey", smallImageKey);
-
-  return {
+  const ret: SetActivity = {
     // TY ADVAITH <3
     type: ActivityType.Listening,
-
     details: track.name,
-    state: `by ${track.artist}`,
+    state: track.artist ? `by ${track.artist}` : undefined,
 
     largeImageKey: track.image || "album",
     largeImageText: track.album,
-    smallImageKey,
-    smallImageText,
 
     startTimestamp: lastStatus.date,
-
     buttons: [
       await getButton(config.button1),
       await getButton(config.button2),
     ].filter(isTruthy),
   };
+
+  if (config.smallImage == "profile" || config.smallImage == "logo") {
+    ret.smallImageKey = listenProvider.logoAsset;
+    ret.smallImageText = `Scrobbling on ${listenProvider.name}`;
+
+    if (config.smallImage == "profile") {
+      const user = await listenProvider.getUser();
+      if (user) {
+        ret.smallImageKey = user.image || listenProvider.logoAsset;
+        ret.smallImageText = `Scrobbling as ${user.name} on ${listenProvider.name}`;
+      }
+    }
+  }
+
+  if (track.artist == NintendoArtist) {
+    ret.state = undefined;
+    if (config.useNintendoMusicArt) {
+      const thumb = await getNintendoThumbnail(track);
+      if (thumb) ret.largeImageKey = thumb;
+    }
+  }
+
+  return ret;
 }
 
 async function getButton(

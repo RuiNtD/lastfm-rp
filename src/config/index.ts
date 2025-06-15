@@ -5,9 +5,8 @@ import { getLogger } from "../logger.ts";
 import type { StandardSchemaV1 } from "@standard-schema/spec";
 import { equal } from "@std/assert";
 
-import Config, { OtherConfig, ButtonType, Provider } from "./V4.ts";
+import Config, { OtherConfig, ButtonType, Provider } from "./V5.ts";
 import chalk from "chalk";
-import { deepEquals } from "bun";
 export { Config, OtherConfig, ButtonType, Provider };
 export type Config = z.infer<typeof Config>;
 export type OtherConfig = z.infer<typeof OtherConfig>;
@@ -43,6 +42,7 @@ try {
     await import("./V1.ts"),
     await import("./V2.ts"),
     await import("./V3.ts"),
+    await import("./V4.ts"),
   ]);
   config = Config.parse(newConf);
 

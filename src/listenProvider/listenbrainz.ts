@@ -1,7 +1,7 @@
 import config from "../config/index.ts";
 import chalk from "chalk";
 import { getLogger } from "../logger.ts";
-import { z } from "zod/v4-mini";
+import { z } from "zod/v4";
 import axios, { AxiosError } from "axios";
 import memoize from "memoize";
 import type { ListenProvider, Track } from "./index.ts";
@@ -25,14 +25,14 @@ function ready() {
 }
 
 const Lookup = z.object({
-  artist_mbids: z.optional(z.array(z.string())),
-  recording_mbid: z.optional(z.string()),
-  release_mbid: z.optional(z.string()),
+  artist_mbids: z.array(z.string()).optional(),
+  recording_mbid: z.string().optional(),
+  release_mbid: z.string().optional(),
   metadata: z.optional(
     z.object({
       release: z.object({
-        caa_id: z.optional(z.number()),
-        caa_release_mbid: z.optional(z.string()),
+        caa_id: z.number().optional(),
+        caa_release_mbid: z.string().optional(),
       }),
     }),
   ),
@@ -69,7 +69,7 @@ const LBPlayingAPI = z.object({
       z.object({
         track_metadata: z.object({
           artist_name: z.string(),
-          release_name: z.optional(z.string()),
+          release_name: z.string().optional(),
           track_name: z.string(),
         }),
       }),

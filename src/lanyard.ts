@@ -1,5 +1,5 @@
 import { ActivityType } from "discord-api-types/v10";
-import { z } from "zod/v4-mini";
+import { z } from "zod/v4";
 import { getDiscordUser } from "./discord.ts";
 import chalk from "chalk";
 import { getLogger } from "./logger.ts";
@@ -12,7 +12,7 @@ export const LanyardActivity = z.object({
   id: z.string(),
   name: z.string(),
   type: z.enum(ActivityType),
-  application_id: z.optional(z.string()),
+  application_id: z.string().optional(),
 });
 export type LanyardActivity = z.infer<typeof LanyardActivity>;
 

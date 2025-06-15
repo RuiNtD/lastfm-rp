@@ -1,7 +1,7 @@
 import config, { lastFmApiKey as apiKey } from "../config/index.ts";
 import chalk from "chalk";
 import { getLogger } from "../logger.ts";
-import { z } from "zod/v4-mini";
+import { z } from "zod/v4";
 import axios, { AxiosError } from "axios";
 import memoize from "memoize";
 import type { ListenProvider, Track, User } from "./index.ts";
@@ -24,14 +24,8 @@ function ready() {
 export const LastFMError = z.object({ error: z.number(), message: z.string() });
 export type LastFMError = z.infer<typeof LastFMError>;
 
-const hashtext = z.pipe(
-  z.object({ "#text": z.string() }),
-  z.transform((v) => v["#text"]),
-);
-const image = z.pipe(
-  z.array(hashtext),
-  z.transform((v) => v.at(-1)),
-);
+const hashtext = z.object({ "#text": z.string() }).transform((v) => v["#text"]);
+const image = z.array(hashtext).transform((v) => v.at(-1));
 
 export const LastFMTrack = z.object({
   artist: hashtext,
@@ -40,7 +34,7 @@ export const LastFMTrack = z.object({
   name: z.string(),
   "@attr": z.optional(
     z.object({
-      nowplaying: z.optional(z.stringbool()),
+      nowplaying: z.stringbool().optional(),
     }),
   ),
   url: z.url(),
@@ -52,14 +46,13 @@ export const LastFMTracks = z.object({
 });
 
 async function sendRequest(params: Record<string, string>): Promise<unknown> {
-  const req = await api.get(`/`, {
+  const { data } = await api.get(`/`, {
     params: {
       api_key: apiKey,
       format: "json",
       ...params,
     },
   });
-  const { data } = req;
 
   const error = LastFMError.safeParse(data);
   if (error.success)
