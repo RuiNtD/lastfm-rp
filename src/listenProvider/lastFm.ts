@@ -82,7 +82,7 @@ async function _getListening(): Promise<Track | undefined | null> {
       image: track.image,
       url: track.url,
     };
-    if (config.showDuration) {
+    if (config.showRemainingTime) {
       const info = await getTrackInfo(track.name, track.artist);
       ret.durationMS = info?.duration;
     }

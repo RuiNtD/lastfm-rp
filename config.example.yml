@@ -1,4 +1,4 @@
-_VERSION: 7 # Do not touch this line!
+_VERSION: 8 # Do not touch this line!
 
 provider: lastfm # lastfm, listenbrainz
 username: ""
@@ -11,7 +11,13 @@ smallImage: profile # What to show on the small image
 # Shows the song's duration when available
 # Changes time elapsed into a progress bar
 # Note that the progress bar is very inaccurate, especially if you pause
-showDuration: true
+
+# Show "elapsed" time since start of song
+# and "remaining" time until end of song (if available)
+# If both are enabled, Discord shows a progress bar
+# Note that both values tend to be inaccurate, especially if you pause
+showElapsedTime: true
+showRemainingTime: true
 
 # Buttons to show on the Rich Presence
 # NOTE: You can't see the buttons on your own profile

@@ -8,7 +8,7 @@ import * as process from "node:process";
 import chalk from "chalk";
 import { SchemaError } from "@standard-schema/utils";
 
-import Config, { OtherConfig, ButtonType, Provider } from "./V7.ts";
+import Config, { OtherConfig, ButtonType, Provider } from "./V8.ts";
 
 export { Config, OtherConfig, ButtonType, Provider };
 export type Config = z.infer<typeof Config>;
@@ -48,6 +48,7 @@ try {
     await import("./V4.ts"),
     await import("./V5.ts"),
     await import("./V6.ts"),
+    await import("./V7.ts"),
   ]);
   config = Config.parse(newConf);
 
@@ -73,11 +74,11 @@ export const lastFmApiKey =
 export const clientID = config.discordClientId || "740140397162135563";
 export default config;
 
-interface MigModule {
-  default: StandardSchemaV1;
-  check?: StandardSchemaV1;
-  migrate: StandardSchemaV1;
-  onSuccess?: () => void;
+interface MigModule<T extends z.core.$ZodType = z.core.$ZodType> {
+  default: z.core.$ZodType;
+  check?: z.core.$ZodType;
+  migrate: T;
+  onSuccess?: (oldConf?: z.input<T>, newConf?: z.output<T>) => void;
 }
 
 async function doMigrate(
@@ -86,22 +87,20 @@ async function doMigrate(
 ): Promise<unknown> {
   let conf = input;
   for (const mig of migrations) {
+    const oldConf = conf;
+
     if (mig.check) {
-      const check = !(await standardValidate(mig.check, conf)).issues;
-      // console.log(check);
+      // const check = !(await standardValidate(mig.check, conf)).issues;
+      const check = (await z.safeParseAsync(mig.check, conf)).success;
       if (!check) continue;
+      conf = await z.parseAsync(mig.migrate, conf);
+    } else {
+      const out = await z.safeParseAsync(mig.migrate, conf);
+      if (!out.success) continue;
+      conf = out.data;
     }
 
-    const out = await standardValidate(mig.migrate, conf);
-    // if (out.issues) log.info("migration failed", out.issues);
-    // else log.info("migration successful", out.value);
-
-    if (out.issues) {
-      if (mig.check) throw new SchemaError(out.issues);
-      continue;
-    }
-    if (mig.onSuccess) mig.onSuccess();
-    conf = out.value;
+    if (mig.onSuccess) mig.onSuccess(oldConf, conf);
   }
   return conf;
 }

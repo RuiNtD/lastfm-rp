@@ -1,4 +1,5 @@
 import { z } from "zod/v4";
+import ConfigV8 from "./V8.ts";
 
 import { Provider, OtherConfig } from "./V6.ts";
 export { Provider, OtherConfig };
@@ -38,3 +39,12 @@ export const ConfigV7 = z.object({
   listenBrainzAPIURL: z.string().optional(),
 });
 export default ConfigV7;
+
+export const migrate = ConfigV7.transform(
+  (config): z.input<typeof ConfigV8> => ({
+    ...config,
+    _VERSION: 8,
+    showElapsedTime: true,
+    showRemainingTime: config.showDuration,
+  }),
+);

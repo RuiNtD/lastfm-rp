@@ -81,7 +81,6 @@ async function activity(): Promise<SetActivity | undefined | null> {
     largeImageKey: track.image || "album",
     largeImageText: track.album,
 
-    startTimestamp: lastStatus.date,
     buttons: [
       await getButton(config.button1),
       await getButton(config.button2),
@@ -101,9 +100,9 @@ async function activity(): Promise<SetActivity | undefined | null> {
     }
   }
 
-  if (config.showDuration && track.durationMS) {
+  if (config.showElapsedTime) ret.startTimestamp = lastStatus.date;
+  if (config.showRemainingTime && track.durationMS) {
     const endDate = new Date(lastStatus.date.getTime() + track.durationMS);
-    // if (endDate > new Date())
     ret.endTimestamp = endDate;
   }
 
