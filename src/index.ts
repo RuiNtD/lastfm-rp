@@ -7,11 +7,14 @@ import {
 import config, { ButtonType } from "./config/index.ts";
 import { hasOtherActivity } from "./otherIDs.ts";
 import { setActivity } from "./discord.ts";
-import { getLogger } from "./logger.ts";
+import { getLogger } from "./lib/logger.ts";
 import { isTruthy } from "./lib/helper.ts";
 import * as Time from "@std/datetime/constants";
 import { getNintendoThumbnail, NintendoArtist } from "./lib/nintendoMusic.ts";
 import chalk from "chalk";
+import { tryResolveSongLink } from "./lib/songlink.ts";
+import { lookupMetadata } from "./listenProvider/listenbrainz.ts";
+import { getTrackInfo as getLastFmTrackInfo } from "./listenProvider/lastFm.ts";
 
 const log = getLogger();
 
@@ -98,6 +101,12 @@ async function activity(): Promise<SetActivity | undefined | null> {
     }
   }
 
+  if (config.showDuration && track.durationMS) {
+    const endDate = new Date(lastStatus.date.getTime() + track.durationMS);
+    // if (endDate > new Date())
+    ret.endTimestamp = endDate;
+  }
+
   if (isNintendo) {
     if (config.useNintendoMusicFormat) {
       ret.state = undefined;
@@ -120,18 +129,71 @@ async function activity(): Promise<SetActivity | undefined | null> {
 async function getButton(
   type: ButtonType,
 ): Promise<GatewayActivityButton | undefined> {
+  const track = await listenProvider.getListening();
+  if (!track) return;
+
   switch (type) {
     case "song": {
-      const track = await listenProvider.getListening();
-      if (!track || !track.url) return;
-      return {
-        label: "View Song",
-        url: track.url,
-      };
+      if (track.url)
+        return {
+          label: "View Song",
+          url: track.url,
+        };
+      return;
+    }
+    case "songlink": {
+      if (track.trackURL) {
+        const songlink = await tryResolveSongLink(track.trackURL);
+        if (songlink)
+          return {
+            label: "View Song",
+            url: songlink,
+          };
+      }
+      if (track.url)
+        return {
+          label: "View Song",
+          url: track.url,
+        };
+      return;
+    }
+    case "song-lastfm": {
+      if (!track.name) return;
+      if (!track.artist) return;
+
+      const info = await getLastFmTrackInfo(track.name, track.artist);
+      if (info)
+        return {
+          label: "View Song",
+          url: info.url,
+        };
+      return;
+    }
+    case "song-listenbrainz":
+    case "song-musicbrainz": {
+      if (!track.name) return;
+      if (!track.artist) return;
+
+      const lookup = await lookupMetadata(
+        track.name,
+        track.artist,
+        track.album,
+      );
+      const mbid = lookup?.recording_mbid;
+      if (!mbid) return;
+      return type == "song-listenbrainz"
+        ? {
+            label: "Listen to Song",
+            url: `https://listenbrainz.org/player/?recording_mbids=${mbid}`,
+          }
+        : {
+            label: "View Song",
+            url: `https://musicbrainz.org/recording/${mbid}`,
+          };
     }
     case "profile": {
       const user = await listenProvider.getUser();
-      if (!user || !user.url) return;
+      if (!user?.url) return;
       return {
         label: `${listenProvider.name} Profile`,
         url: user.url,

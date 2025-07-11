@@ -2,7 +2,7 @@ import { ActivityType } from "discord-api-types/v10";
 import { z } from "zod/v4";
 import { getDiscordUser } from "./discord.ts";
 import chalk from "chalk";
-import { getLogger } from "./logger.ts";
+import { getLogger } from "./lib/logger.ts";
 import { delay } from "@std/async";
 
 const log = getLogger(chalk.hex("#d7bb87")("Lanyard"));

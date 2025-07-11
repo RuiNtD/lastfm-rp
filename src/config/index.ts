@@ -1,13 +1,14 @@
 import { z } from "zod/v4-mini";
 import * as YAML from "yaml";
 import * as fs from "node:fs/promises";
-import { getLogger } from "../logger.ts";
+import { getLogger } from "../lib/logger.ts";
 import type { StandardSchemaV1 } from "@standard-schema/spec";
 import { equal } from "@std/assert";
 import * as process from "node:process";
 import chalk from "chalk";
+import { SchemaError } from "@standard-schema/utils";
 
-import Config, { OtherConfig, ButtonType, Provider } from "./V6.ts";
+import Config, { OtherConfig, ButtonType, Provider } from "./V7.ts";
 
 export { Config, OtherConfig, ButtonType, Provider };
 export type Config = z.infer<typeof Config>;
@@ -46,6 +47,7 @@ try {
     await import("./V3.ts"),
     await import("./V4.ts"),
     await import("./V5.ts"),
+    await import("./V6.ts"),
   ]);
   config = Config.parse(newConf);
 
@@ -59,6 +61,9 @@ try {
   if (e instanceof z.core.$ZodError) {
     log.error(chalk.bold("Error parsing config"));
     log.error(z.prettifyError(e));
+  } else if (e instanceof SchemaError) {
+    log.error(chalk.bold("Error parsing config"));
+    log.error(e.message + "\n" + YAML.stringify(e.issues));
   } else log.error("Error parsing config.yml", e);
   process.exit();
 }
@@ -70,6 +75,8 @@ export default config;
 
 interface MigModule {
   default: StandardSchemaV1;
+  check?: StandardSchemaV1;
+  migrate: StandardSchemaV1;
   onSuccess?: () => void;
 }
 
@@ -79,8 +86,20 @@ async function doMigrate(
 ): Promise<unknown> {
   let conf = input;
   for (const mig of migrations) {
-    const out = await standardValidate(mig.default, conf);
-    if (out.issues) continue;
+    if (mig.check) {
+      const check = !(await standardValidate(mig.check, conf)).issues;
+      // console.log(check);
+      if (!check) continue;
+    }
+
+    const out = await standardValidate(mig.migrate, conf);
+    // if (out.issues) log.info("migration failed", out.issues);
+    // else log.info("migration successful", out.value);
+
+    if (out.issues) {
+      if (mig.check) throw new SchemaError(out.issues);
+      continue;
+    }
     if (mig.onSuccess) mig.onSuccess();
     conf = out.value;
   }
@@ -91,7 +110,5 @@ async function standardValidate<T extends StandardSchemaV1>(
   schema: T,
   input: unknown,
 ): Promise<StandardSchemaV1.Result<StandardSchemaV1.InferOutput<T>>> {
-  let result = schema["~standard"].validate(input);
-  if (result instanceof Promise) result = await result;
-  return result;
+  return await schema["~standard"].validate(input);
 }

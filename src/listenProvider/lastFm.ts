@@ -1,11 +1,12 @@
 import config, { lastFmApiKey as apiKey } from "../config/index.ts";
 import chalk from "chalk";
-import { getLogger } from "../logger.ts";
+import { getLogger } from "../lib/logger.ts";
 import { z } from "zod/v4";
 import axios, { AxiosError } from "axios";
-import memoize from "memoize";
 import type { ListenProvider, Track, User } from "./index.ts";
 import * as Time from "@std/datetime/constants";
+import pMemoize from "p-memoize";
+import ExpiryMap from "expiry-map";
 
 const api = axios.create({
   baseURL: "https://ws.audioscrobbler.com/2.0/",
@@ -74,19 +75,28 @@ async function _getListening(): Promise<Track | undefined | null> {
     ready();
 
     if (!track || !track["@attr"]?.nowplaying) return;
-    return {
+    const ret: Track = {
       name: track.name,
       artist: track.artist,
       album: track.album,
       image: track.image,
       url: track.url,
     };
+    if (config.showDuration) {
+      const info = await getTrackInfo(track.name, track.artist);
+      ret.durationMS = info?.duration;
+    }
+
+    return ret;
   } catch (e) {
     if (e instanceof AxiosError) log.error(chalk.red("Error"), e.message);
     else log.error(chalk.red("Error"), e);
     return null;
   }
 }
+const getListening = pMemoize(_getListening, {
+  cache: new ExpiryMap(Time.SECOND * 5),
+});
 
 const LastFMUser = z.object({
   name: z.string(),
@@ -116,12 +126,38 @@ async function _getUser(): Promise<User | undefined> {
     return;
   }
 }
+const getUser = pMemoize(_getUser, { cache: new ExpiryMap(Time.MINUTE * 5) });
+
+const LastAPITrackInfo = z.object({
+  track: z.object({
+    url: z.url(),
+    duration: z.coerce.number().optional(),
+  }),
+});
+
+async function _getTrackInfo(track: string, artist: string) {
+  try {
+    const data = await sendRequest({
+      method: "track.getInfo",
+      track,
+      artist,
+    });
+    return LastAPITrackInfo.parse(data).track;
+  } catch (e) {
+    if (e instanceof AxiosError) log.error(chalk.red("Error"), e.message);
+    else log.error(chalk.red("Error"), e);
+    return;
+  }
+}
+export const getTrackInfo = pMemoize(_getTrackInfo, {
+  cache: new ExpiryMap(Time.DAY),
+});
 
 const LastFMProvider: ListenProvider = {
   name: "Last.fm",
   logoAsset: "lastfm",
 
-  getListening: memoize(_getListening, { maxAge: Time.SECOND * 5 }),
-  getUser: memoize(_getUser, { maxAge: Time.MINUTE * 5 }),
+  getListening,
+  getUser,
 };
 export default LastFMProvider;

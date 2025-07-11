@@ -1,10 +1,11 @@
-import { z, object } from "zod/v4";
+import { z } from "zod/v4";
 import ConfigV6 from "./V6.ts";
 
 import { Provider, OtherConfig, ButtonType } from "./V4.ts";
 export { Provider, OtherConfig, ButtonType };
 
-export default object({
+export const check = z.object({ _VERSION: z.literal(5) });
+export const ConfigV5 = z.object({
   _VERSION: z.literal(5),
 
   provider: Provider,
@@ -22,7 +23,10 @@ export default object({
   lastFmApiKey: z.string().optional(),
   discordClientId: z.string().optional(),
   listenBrainzAPIURL: z.string().optional(),
-}).transform(
+});
+export default ConfigV5;
+
+export const migrate = ConfigV5.transform(
   (config): z.input<typeof ConfigV6> => ({
     ...config,
     _VERSION: 6,

@@ -1,11 +1,12 @@
 import config from "../config/index.ts";
 import chalk from "chalk";
-import { getLogger } from "../logger.ts";
+import { getLogger } from "../lib/logger.ts";
 import { z } from "zod/v4";
 import axios, { AxiosError } from "axios";
-import memoize from "memoize";
 import type { ListenProvider, Track } from "./index.ts";
 import * as Time from "@std/datetime/constants";
+import pMemoize from "p-memoize";
+import ExpiryMap from "expiry-map";
 
 const api = axios.create({
   baseURL: config.listenBrainzAPIURL || "https://api.listenbrainz.org",
@@ -30,6 +31,9 @@ const Lookup = z.object({
   release_mbid: z.string().optional(),
   metadata: z.optional(
     z.object({
+      recording: z.object({
+        length: z.number().optional(),
+      }),
       release: z.object({
         caa_id: z.number().optional(),
         caa_release_mbid: z.string().optional(),
@@ -61,18 +65,30 @@ async function _lookup(
     return;
   }
 }
-const lookupMetadata = memoize(_lookup, { maxAge: Time.HOUR });
+export const lookupMetadata = pMemoize(_lookup, {
+  cache: new ExpiryMap(Time.HOUR),
+});
 
 const LBPlayingAPI = z.object({
   payload: z.object({
-    listens: z.array(
-      z.object({
-        track_metadata: z.object({
-          artist_name: z.string(),
-          release_name: z.string().optional(),
-          track_name: z.string(),
+    listens: z.tuple([]).or(
+      z.tuple([
+        z.object({
+          track_metadata: z.object({
+            additional_info: z.optional(
+              z.object({
+                music_service_name: z.string().optional(),
+                origin_url: z.string().optional(),
+                duration_ms: z.number().optional(),
+                duration: z.number().optional(),
+              }),
+            ),
+            artist_name: z.string(),
+            release_name: z.string().optional(),
+            track_name: z.string(),
+          }),
         }),
-      }),
+      ]),
     ),
   }),
 });
@@ -83,7 +99,7 @@ async function _getListening(): Promise<Track | undefined | null> {
     log.debug("listenbrainz playing now", data);
 
     const resp = LBPlayingAPI.parse(data);
-    const track = resp.payload.listens.at(0)?.track_metadata;
+    const track = resp.payload.listens[0]?.track_metadata;
     ready();
     if (!track) return;
 
@@ -99,12 +115,21 @@ async function _getListening(): Promise<Track | undefined | null> {
       track.release_name,
     );
     if (lookup?.metadata) {
-      const { caa_release_mbid, caa_id } = lookup.metadata.release;
+      const { metadata } = lookup;
+      const { caa_release_mbid, caa_id } = metadata.release;
+
       if (caa_release_mbid && caa_id)
         ret.image = `http://coverartarchive.org/release/${caa_release_mbid}/${caa_id}-500.jpg`;
-      if (lookup?.recording_mbid)
+      if (lookup.recording_mbid)
         ret.url = `https://musicbrainz.org/recording/${lookup.recording_mbid}`;
+
+      if (metadata.recording.length) ret.durationMS = metadata.recording.length;
     }
+
+    const info = track.additional_info || {};
+    if (info.duration) ret.durationMS = info.duration * Time.SECOND;
+    if (info.duration_ms) ret.durationMS = info.duration_ms;
+    if (info.origin_url) ret.trackURL = info.origin_url;
 
     return ret;
   } catch (e) {
@@ -113,12 +138,15 @@ async function _getListening(): Promise<Track | undefined | null> {
     return null;
   }
 }
+const getListening = pMemoize(_getListening, {
+  cache: new ExpiryMap(Time.SECOND * 5),
+});
 
 const LBProvider: ListenProvider = {
   name: "ListenBrainz",
   logoAsset: "listenbrainz",
 
-  getListening: memoize(_getListening, { maxAge: Time.SECOND * 5 }),
+  getListening,
   async getUser() {
     return {
       name: username,

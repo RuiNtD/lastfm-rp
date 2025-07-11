@@ -1,4 +1,4 @@
-_VERSION: 6 # Do not touch this line!
+_VERSION: 7 # Do not touch this line!
 
 provider: lastfm # lastfm, listenbrainz
 username: ""
@@ -8,11 +8,23 @@ smallImage: profile # What to show on the small image
 # profile: "Scrobbling as X on X" with profile picture
 # none: No small image
 
+# Shows the song's duration when available
+# Changes time elapsed into a progress bar
+# Note that the progress bar is very inaccurate, especially if you pause
+showDuration: true
+
 # Buttons to show on the Rich Presence
 # NOTE: You can't see the buttons on your own profile
-button1: song
+button1: songlink
 button2: profile
-# song: "View Song"
+# song: "View Song" (links to the scrobble provider)
+# songlink:
+#   If possible, links to Songlink/Odesli
+#   Otherwise, links to the scrobble provider
+# song-lastfm: Links to Last.FM
+# song-listenbrainz: "Listen to Song"
+#   Links to an instant playlist on ListenBrainz
+# song-musicbrainz: links to MusicBrainz
 # profile: "<Provider> Profile"
 # github: "Scrobble Rich Presence"
 # none: No button
@@ -31,7 +43,7 @@ disableOnPresence:
   any: false
   listening: true
   custom: # Application IDs or names (case-insensitive)
-    - "12345678901234567890" # "" is required
+    - "12345678901234567890" # "" is required for IDs
     - Apple Music
 # lastFmApiKey: ""
 # discordClientId: ""

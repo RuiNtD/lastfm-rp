@@ -1,7 +1,7 @@
-import { z, object } from "zod/v4";
+import { z } from "zod/v4";
 import ConfigV2 from "./V2.ts";
 
-export const OtherConfig = object({
+export const OtherConfig = z.object({
   any: z.boolean().default(false),
   listening: z.boolean().default(true),
   cider: z.boolean().default(true),
@@ -10,7 +10,8 @@ export const OtherConfig = object({
   custom: z.array(z.string().regex(/^\d+$/).max(20)),
 });
 
-export default object({
+export const check = z.object({ _VERSION: z.literal(1) });
+export const ConfigV1 = z.object({
   _VERSION: z.literal(1),
   username: z
     .string()
@@ -24,7 +25,10 @@ export default object({
     lastFmKey: z.string().optional(),
     appId: z.string().optional(),
   }),
-}).transform(
+});
+export default ConfigV1;
+
+export const migrate = ConfigV1.transform(
   (config): z.input<typeof ConfigV2> => ({
     _VERSION: 2,
     lastFmUsername: config.username,

@@ -1,7 +1,7 @@
 import { type SetActivity, Client } from "@xhayper/discord-rpc";
 import { clientID } from "./config/index.ts";
 import chalk from "chalk";
-import { getLogger } from "./logger.ts";
+import { getLogger } from "./lib/logger.ts";
 import { delay, retry } from "@std/async";
 import { SECOND } from "@std/datetime/constants";
 

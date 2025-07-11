@@ -8,6 +8,8 @@ export interface Track {
   album?: string;
   image?: string;
   url?: string;
+  trackURL?: string;
+  durationMS?: number;
 }
 
 export interface User {

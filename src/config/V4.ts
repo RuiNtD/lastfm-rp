@@ -1,9 +1,9 @@
-import { z, object } from "zod/v4";
+import { z } from "zod/v4";
 import ConfigV5 from "./V5.ts";
 
 export const Provider = z.enum(["lastfm", "listenbrainz"]);
 
-export const OtherConfig = object({
+export const OtherConfig = z.object({
   any: z.boolean().default(false),
   listening: z.boolean().default(false),
   custom: z
@@ -16,7 +16,8 @@ export const ButtonType = z
   .default("none");
 export type ButtonType = z.infer<typeof ButtonType>;
 
-export default object({
+export const check = z.object({ _VERSION: z.literal(4) });
+export const ConfigV4 = z.object({
   _VERSION: z.literal(4),
 
   provider: Provider,
@@ -32,7 +33,10 @@ export default object({
   lastFmApiKey: z.string().optional(),
   discordClientId: z.string().optional(),
   listenBrainzAPIURL: z.string().optional(),
-}).transform(
+});
+export default ConfigV4;
+
+export const migrate = ConfigV4.transform(
   (config): z.input<typeof ConfigV5> => ({
     ...config,
     _VERSION: 5,

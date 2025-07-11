@@ -1,8 +1,9 @@
 import axios, { AxiosError } from "axios";
-import memoize from "memoize";
 import { z } from "zod/v4";
 import { DAY } from "@std/datetime/constants";
 import type { Track } from "../listenProvider";
+import ExpiryMap from "expiry-map";
+import pMemoize from "p-memoize";
 
 export const NintendoArtist = "Nintendo Co., Ltd.";
 
@@ -45,7 +46,7 @@ async function _getGames() {
   const { data } = await api.get("gameGroups?groupingPolicy=HARDWARE");
   return Games.parse(data);
 }
-export const getGames = memoize(_getGames, { maxAge: DAY });
+export const getGames = pMemoize(_getGames, { cache: new ExpiryMap(DAY) });
 
 const Track = z.object({
   id: z.uuid(),
@@ -74,13 +75,17 @@ async function _getPlaylists(gameUUID: string) {
   const { data } = await api.get(`games/${gameUUID}/relatedPlaylists`);
   return GamePlaylists.parse(data);
 }
-export const getPlaylists = memoize(_getPlaylists, { maxAge: DAY });
+export const getPlaylists = pMemoize(_getPlaylists, {
+  cache: new ExpiryMap(DAY),
+});
 
 async function _getPlaylist(playlistUUID: string) {
   const { data } = await api.get(`officialPlaylists/${playlistUUID}`);
   return GamePlaylist.parse(data);
 }
-export const getPlaylist = memoize(_getPlaylist, { maxAge: DAY });
+export const getPlaylist = pMemoize(_getPlaylist, {
+  cache: new ExpiryMap(DAY),
+});
 
 export async function getNintendoThumbnail(
   songName: string,

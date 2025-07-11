@@ -1,7 +1,7 @@
-import { z, object } from "zod/v4";
+import { z } from "zod/v4";
 import ConfigV3 from "./V3.ts";
 
-export const OtherConfig = object({
+export const OtherConfig = z.object({
   any: z.boolean().default(false),
   listening: z.boolean().default(true),
   cider: z.boolean().default(true),
@@ -10,7 +10,8 @@ export const OtherConfig = object({
   custom: z.array(z.string().regex(/^\d+$/).max(20)).optional(),
 });
 
-export default object({
+export const check = z.object({ _VERSION: z.literal(2) });
+export const ConfigV2 = z.object({
   _VERSION: z.literal(2),
   lastFmUsername: z
     .string()
@@ -21,7 +22,10 @@ export default object({
   disableOnPresence: OtherConfig.optional(),
   lastFmApiKey: z.string().optional(),
   discordClientId: z.string().optional(),
-}).transform(
+});
+export default ConfigV2;
+
+export const migrate = ConfigV2.transform(
   (config): z.input<typeof ConfigV3> => ({
     ...config,
     _VERSION: 3,
